@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Technical University of Munich
+ * Copyright (c) 20013, Jacobs University Bremen.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,31 +28,14 @@
  *
  * This file is part of the Contiki operating system.
  *
- * @(#)$$
+ * Anuj Sehgal <s.anuj@jacobs-university.de>
  */
 
-/**
- * \file
- *        Sample Contiki kernel for Zigbit module
- *
- * \author
- *         Frederic Thepaut
- */
-
-#ifndef __CONTIKI_AVR_ZIGBIT_H__
-#define __CONTIKI_AVR_ZIGBIT_H__
-
+#include "snmpd.h"
 #include "contiki.h"
-#include "contiki-net.h"
-#include "contiki-lib.h"
 
-#include "dev/rs232.h"
+#include "project-conf.h"
 
-#include "dev/serial-line.h"
-#include "dev/slip.h"
-
-void init_lowlevel(void);
-void init_net(void);
-
-
-#endif /* #ifndef __CONTIKI_AVR_ZIGBIT_H__ */
+/*---------------------------------------------------------------------------*/
+AUTOSTART_PROCESSES(&snmpd_process);
+/*---------------------------------------------------------------------------*/

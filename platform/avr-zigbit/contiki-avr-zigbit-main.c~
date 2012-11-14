@@ -88,8 +88,8 @@ PROCINIT(&etimer_process, &mac_process, &tcpip_process );
 #endif
 /* Put default MAC address in EEPROM */
 
-//uint8_t mac_address[8] EEMEM = {0x11, 0x11, 0x11, 0x11, 0x11, MAC_CONF_FREQUENCY, 0x00, MAC_CONF_NUMBER};
-uint8_t mac_address[8] EEMEM = {0x11, 0x11, 0x11, 0x11, 0x11, 0x24, 0x00, 0x01};
+uint8_t mac_address[8] EEMEM = {0x11, 0x11, 0x11, 0x11, 0x11, MAC_CONF_FREQUENCY, 0x00, MAC_CONF_NUMBER};
+//uint8_t mac_address[8] EEMEM = {0x11, 0x11, 0x11, 0x11, 0x11, 0x24, 0x00, 0x01};
 
 
 void
@@ -161,8 +161,8 @@ init_lowlevel(void)
 #if ANNOUNCE_BOOT
   printf_P(PSTR("Routing Enabled\n"));
 #endif
-  //rime_init(rime_udp_init(NULL));
-  //uip_router_register(&rimeroute);
+  rime_init(rime_udp_init(NULL));
+  uip_router_register(&rimeroute);
 #endif
 
   process_start(&tcpip_process, NULL);

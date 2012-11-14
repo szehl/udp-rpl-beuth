@@ -1496,7 +1496,7 @@ s8t mib_init()
   s32t defaultServiceValue = 78;
   s32t defaultSnmpEnableAuthenTraps = 2;
   s32t ifNumber = 1;
-  char* sysDesc = "AVR Raven (RPL Mote)";
+  char* sysDesc = "AVR Zigbit (RPL Mote)";
   char* sysContact = "Anuj Sehgal <s.anuj@jacobs-university.de>";
   char* sysName = "RPL-MIB Test Mote";
   char* sysLocation = "Jacobs University Bremen";
@@ -1512,6 +1512,7 @@ s8t mib_init()
       add_scalar(&oid_system_sysORLastChange, FLAG_ACCESS_READONLY, BER_TYPE_TIME_TICKS, 0, 0, 0) == -1) {
     return -1;
   }
+  
   if (add_table(&oid_system_sysOREntry, &getOREntry, &getNextOREntry, 0) == -1) {
     return -1;
   }
