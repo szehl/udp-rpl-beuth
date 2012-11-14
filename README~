@@ -1,0 +1,34 @@
+The Contiki OS
+--------------
+
+This repository holds a modified version of the Contiki OS. The
+platforms have been modified to interoperate without any further
+changes to the setting. Currently, the following platforms
+interoperate:
+
+     - AVR Raven (avr-raven)
+     - Telos B / TMote SKy (sky)
+     - Redbee Econotag (redbee-econotag)
+
+A network consisting of the all the above motes, interoperating 
+using the Contiki RPL implementation has been tested to work.
+
+=======
+
+The Contiki Operating System
+
+Contiki is an open source operating system that runs on tiny low-power
+microcontrollers and makes it possible to develop applications that
+make efficient use of the hardware while providing standardized
+low-power wireless communication for a range of hardware platforms.
+
+Contiki is used in numerous commercial and non-commercial systems,
+such as city sound monitoring, street lights, networked electrical
+power meters, industrial monitoring, radiation monitoring,
+construction site monitoring, alarm systems, remote house monitoring,
+and so on.
+
+For more information, see the Contiki website:
+
+http://www.contiki-os.org/
+
