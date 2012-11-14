@@ -47,9 +47,15 @@
 #include "net/uip-ds6.h"
 #endif
 
+/*sz*/
+#include <avr/eeprom.h>
+#include <avr/io.h>
+#define PACKET_BLINK_ZIGBIT_ENABLE
+/*sz*/
+
 #include <string.h>
 
-#define DEBUG DEBUG_NONE
+#define DEBUG DEBUG_FULL
 #include "net/uip-debug.h"
 
 #if UIP_LOGGING
@@ -526,11 +532,23 @@ eventhandler(process_event_t ev, process_data_t data)
 void
 tcpip_input(void)
 {
+  /*sz*/
+  #ifdef PACKET_BLINK_ZIGBIT_ENABLE
+  /*Blinking LED packet receiving*/
+  PORTB &= ~(1 << PIN6);
+  #endif
+  /*sz*/
+
   process_post_synch(&tcpip_process, PACKET_INPUT, NULL);
   uip_len = 0;
 #if UIP_CONF_IPV6
   uip_ext_len = 0;
 #endif /*UIP_CONF_IPV6*/
+  
+  /*sz*/
+  /*Blinking LED packet receiving*/
+  PORTB |= (1 << PIN6);
+  /*sz*/
 }
 /*---------------------------------------------------------------------------*/
 #if UIP_CONF_IPV6
