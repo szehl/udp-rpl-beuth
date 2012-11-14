@@ -52,7 +52,7 @@
 
 #if ENABLE_SNMPv3 && ENABLE_PRIVACY
 
-#if CONTIKI_TARGET_AVR_RAVEN
+#if CONTIKI_TARGET_AVR_RAVEN || CONTIKI_TARGET_AVR_ZIGBIT
 #include <avr/pgmspace.h>
 #else
 #define PROGMEM
@@ -474,34 +474,34 @@ static const u32 rcon[] = {
 
 
 u32t getTe0(u16t index) {
-#if CONTIKI_TARGET_AVR_RAVEN
+#if CONTIKI_TARGET_AVR_RAVEN || CONTIKI_TARGET_AVR_ZIGBIT
     return pgm_read_dword(&Te0u[index]);
 #else
-    return Te0u[index];
+   return Te0u[index];
 #endif
 }
 
 u32t getTe1(u16t index) {
-#if CONTIKI_TARGET_AVR_RAVEN
+#if CONTIKI_TARGET_AVR_RAVEN || CONTIKI_TARGET_AVR_ZIGBIT
     return pgm_read_dword(&Te1u[index]);
 #else
-    return Te1u[index];
+   return Te1u[index];
 #endif
 }
 
 u32t getTe2(u16t index) {
-#if CONTIKI_TARGET_AVR_RAVEN
+#if CONTIKI_TARGET_AVR_RAVEN || CONTIKI_TARGET_AVR_ZIGBIT
     return pgm_read_dword(&Te2u[index]);
 #else
-    return Te2u[index];
+ return Te2u[index];
 #endif
 }
 
 u32t getTe3(u16t index) {
-#if CONTIKI_TARGET_AVR_RAVEN
+#if CONTIKI_TARGET_AVR_RAVEN || CONTIKI_TARGET_AVR_ZIGBIT
     return pgm_read_dword(&Te3u[index]);
 #else
-    return Te3u[index];
+   return Te3u[index];
 #endif
 }
 

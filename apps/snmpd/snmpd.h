@@ -17,6 +17,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
+ * 09-07-2012 added RFC3414 confrom non volatile snmpEngineBoots functionality -> see lines marked with "sz"
+ * 16-07-2012 added pseudo random value generation for 64bit integer at boot time, used to generate IV in AES
+ * algorithm. defined in RFC3826 -> see lines marked with "sz"
+ * Sven Zehl - sven@zehl.co.cc
  */
 
 /**
@@ -34,17 +38,27 @@
 #include "snmpd-types.h"
 
 /** \brief port listened by the SNMP agent */
-// port 161 seems to be blocked on our firewall
-#define LISTEN_PORT 1610
-uint32_t snmp_packets;
-
-/** \brief variable to hold the meter result */
-extern uint32_t kWh_meter1;
+#define LISTEN_PORT 161
 
 /** \brief SNMP agent process. */
 PROCESS_NAME(snmpd_process);
 
 /** \brief Time in seconds since the system started. */
-//u32t getSysUpTime();
+u32t getSysUpTime();
+
+/*sz*/
+#if ENABLE_SNMPv3
+/** \brief Value of SNMP Engine Boots used for USM */
+u32t getMsgAuthoritativeEngineBoots();
+#endif
+/*sz*/
+
+/*sz*/
+/** \brief Returns the lower part of the 64 Bit pseudo random integer variable, generated at startup*/
+u32t getLPrivacyParameters();
+/** \brief Returns the higher part of the 64 Bit pseudo random integer variable, generated at startup*/
+u32t getHPrivacyParameters();
+/*sz*/
+
 
 #endif /* __SNMPD_H__ */

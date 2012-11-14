@@ -17,6 +17,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
+ * 16-07-2012 added RFC confrom snmpEngineBoots functionality -> see lines marked with "sz"
+ * 25-07-2012 added RFC conform securityLevel checking -> see lines marked with "sz"
+ * Sven Zehl - sven@zehl.co.cc
+ *
  */
 #include <string.h>
 #include <stdlib.h>
@@ -30,6 +34,25 @@
 #include "snmpd-conf.h"
 #include "md5.h"
 #include "aes.h"
+
+/*sz*/
+/*Enable Printf() Debugging*/
+/** \brief Enable Printf() Debugging*/
+#define PDEBUG 1
+/*sz*/
+
+/*sz*/
+/*For testing EngineTime and EngineBoots Hmac might be disabled */
+/** \brief For testing EngineTime and EngineBoots Hmac might be disabled */
+#define DISABLE_HMAC 0
+/*sz*/
+
+/*sz*/
+/*For Testing SNMP EngineBoots Turn Checking SNMP AuthoritativeEngineTime off*/
+/** \brief For Testing SNMP EngineBoots Turn Checking SNMP AuthoritativeEngineTime off*/
+#define DISABLE_MAET 0
+/*sz*/
+
 
 #if ENABLE_SNMPv3
 
@@ -72,6 +95,19 @@ u32t usmStatsWrongDigestsCounter;
 u8t usmStatsDecryptionErrors_array[] = {0x2b, 0x06, 0x01, 0x06, 0x03, 0x0f, 0x01, 0x01, 0x06, 0x00};
 ptr_t usmStatsDecryptionErrors = {usmStatsDecryptionErrors_array, 10};
 u32t usmStatsDecryptionErrorsCounter;
+
+/*sz*/
+
+/** \brief The total number of packets received by the SNMP
+ *         engine which were dropped because they got an
+ *         unsupportedSecurityLevel for the user specified
+ *		   in snmpd-conf.c.
+ */
+u8t usmStatsUnsupportedSecurityLevel_array[] = {0x2b, 0x06, 0x01, 0x06, 0x03, 0x0f, 0x01, 0x01, 0x01};
+ptr_t usmStatsUnsupportedSecurityLevel = {usmStatsUnsupportedSecurityLevel_array, 9};
+u32t usmStatsUnsupportedSecurityLevelCounter;
+
+/*sz*/
 
 static s8t decode_USM_parameters(u8t* const input, const u16t input_len, u16t* pos, message_v3_t* request)
 {
@@ -121,10 +157,23 @@ static s8t report(message_v3_t* request, ptr_t* oid, u32t* counter) {
     }
     // release variable bindings from the PDU
     free_varbinds(&request->pdu);
-
-    request->msgFlags = 0;
-    request->pdu.response_type = BER_TYPE_SNMP_REPORT;
+	printf("Sending Report....\n");
     
+    
+    //request->msgFlags = 0;
+    
+    /*sz*/
+    /*Added this lines to perform authentication for reports which need it*/
+    /*Especially for the SNMP Discovery Process, see RFC3414, Sec.4*/
+    if(request->msgFlags & FLAG_AUTH)
+    {
+		request->msgFlags = FLAG_AUTH;
+		printf("Report set to Auth\n");
+	}
+    /*sz*/
+        
+    request->pdu.response_type = BER_TYPE_SNMP_REPORT;
+
     request->pdu.varbind_first_ptr = varbind_list_append(0);
     if (!request->pdu.varbind_first_ptr) {
         return FAILURE;
@@ -176,11 +225,20 @@ static s8t isBadHMAC(u8t* input, u16t input_len, message_v3_t* request)
     memset(request->msgAuthenticationParameters.ptr, 0, 12);
 
     u8t hmac[16];
-    hmac_md5_96(input, input_len, hmac); 
+    hmac_md5_96(input, input_len, hmac);
 
     if (memcmp(authParam, hmac, 12)) {
+	#if PDEBUG
+		printf("USM Modul:isBadHMAC: Authentication Failed!\n");
+	#endif
+	#ifndef DISABLE_HMAC
         snmp_log("authentication failed\n");
         return ERR_USM;
+	#endif
+	#ifdef DISABLE_HMAC
+	printf("Warning Authentication failed but HMAC Check is disabled\n");
+	return 0;
+	#endif
     }
     return 0;
 }
@@ -207,32 +265,110 @@ s8t processIncomingMsg_USM(u8t* const input, const u16t input_len, u16t* pos, me
     if (request->msgAuthoritativeEngineID.len != getEngineID()->len ||
             memcmp(request->msgAuthoritativeEngineID.ptr, getEngineID()->ptr, getEngineID()->len)) {
         TRY(report(request, &usmStatsUnknownEngineIDs, &usmStatsUnknownEngineIDCounter));
+	#if PDEBUG
+		printf("USM Modul: Error! Wrong Engine ID!\n");
+	#endif
         return ERR_USM;
     }
 
     /* check user name */
     if (request->msgUserName.len != strlen((char*)getUserName()) || memcmp(request->msgUserName.ptr, getUserName(), request->msgUserName.len) != 0) {
         TRY(report(request, &usmStatsUnknownUserNames, &usmStatsUnknownUserNamesCounter));
+	#if PDEBUG
+		printf("USM Modul: Error! Wrong Username\n");
+	#endif
         return ERR_USM;
     }
 
+/*sz*/
+#if ENABLE_AUTH
+	if (!(request->msgFlags & FLAG_AUTH))
+	{
+	#if PDEBUG
+		printf("USM Modul: Error! User needs Authentication\n");
+	#endif
+		TRY(report(request, &usmStatsUnsupportedSecurityLevel, &usmStatsUnsupportedSecurityLevelCounter));
+        return ERR_USM;
+	}
+#endif
+/*sz*/
+
     if (request->msgFlags & FLAG_AUTH) {
 #if ENABLE_AUTH
+
         /* The timeliness check is only performed if authentication is applied to the message */
         if (request->msgAuthenticationParameters.len != 12 || isBadHMAC(input, input_len, request) != ERR_NO_ERROR) {
+		#ifndef DISABLE_HMAC
             TRY(report(request, &usmStatsWrongDigests, &usmStatsWrongDigestsCounter));
+		#if PDEBUG
+			printf("USM Modul: Error! Authentication Failed!\n");
+		#endif
             return ERR_USM;
+		#endif /* Disable HMAC */
         }
+
 #else
         return FAILURE;
 #endif
     }
 
-    if (request->msgAuthoritativeEngineBoots != getMsgAuthoritativeEngineBoots() || 
-            abs(request->msgAuthoritativeEngineTime - getSysUpTime()) < TIME_WINDOW) {
+#if ENABLE_AUTH /*sz*/
+
+#if PDEBUG
+	 printf("Checking Engine Time getsysuptime()/100: %d\n",(getSysUpTime()/100));
+	 printf("Request EngineTime:%d\n", request->msgAuthoritativeEngineTime);
+	 printf("RequestTime - getSysUpTime/100: %d \n", (request->msgAuthoritativeEngineTime - (getSysUpTime()/100)));
+	 printf("abs of RequestTime - getSysUpTime/100: %d \n",(abs(request->msgAuthoritativeEngineTime - (getSysUpTime()/100))));
+	 printf("Checking if it is in the time window (1 if it is not!!!) %d\n", (abs(request->msgAuthoritativeEngineTime - (getSysUpTime()/100)) > TIME_WINDOW));
+	 if (request->msgAuthoritativeEngineBoots == 0){
+	 printf("USM Modul: request->msgAuthoritativeEngineBoots == 0\n");
+	 }
+	 if (request->msgAuthoritativeEngineBoots != getMsgAuthoritativeEngineBoots()){
+	 printf("USM Modul: request->msgAuthoritativeEngineBoots != getMsgAuthoritativeEngineBoots()\n");
+	 }
+	 if (abs(request->msgAuthoritativeEngineTime - getSysUpTime()) < TIME_WINDOW){
+	 printf("USM Modul: abs(request->msgAuthoritativeEngineTime - getSysUpTime()) < TIME_WINDOW\n");
+	 }
+	 if (getMsgAuthoritativeEngineBoots()>=2147483647){
+	 printf("USM Modul: getMsgAuthoritativeEngineBoots()>=2147483647\n");
+	 }
+#endif
+
+#if DISABLE_MAET == 0
+    if (request->msgAuthoritativeEngineBoots != getMsgAuthoritativeEngineBoots() ||
+            abs(request->msgAuthoritativeEngineTime - (getSysUpTime()/100)) > TIME_WINDOW ||
+				getMsgAuthoritativeEngineBoots()>=2147483647){
+#endif
+#if DISABLE_MAET == 1
+    if (request->msgAuthoritativeEngineBoots != getMsgAuthoritativeEngineBoots() ||
+				getMsgAuthoritativeEngineBoots()>=2147483647){
+#endif
+				/*sz*/
+				/* Changed not working abs(request->msgAuthoritativeEngineTime - getSysUpTime()) < TIME_WINDOW)*/
+				/* to line above.
+				/* added line getMsgAuthoritativeEngineBoots()>=2147483647 in if above */
+				/* to stop the SNMP Agent when the maximum snmpEngineBoots is reached*/
+				/* and send an Not in Time Window Message back.*/
+				/*sz*/
         TRY(report(request, &usmStatsNotInTimeWindows, &usmStatsNotInTimeWindowsCounter));
         return ERR_USM;
     }
+/*sz*/
+
+#endif /*#if ENABLE_AUTH*/ /*sz*/
+
+
+#if ENABLE_PRIVACY
+	if (!(request->msgFlags & FLAG_PRIV))
+	{
+	#if PDEBUG
+		printf("USM Modul: Error! User needs Privacy\n");
+	#endif
+		TRY(report(request, &usmStatsUnsupportedSecurityLevel, &usmStatsUnsupportedSecurityLevelCounter));
+        return ERR_USM;
+	}
+#endif
+/*sz*/
 
     if (request->msgFlags & FLAG_PRIV) {
 #if ENABLE_PRIVACY

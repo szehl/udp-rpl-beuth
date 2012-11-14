@@ -26,7 +26,7 @@
 #include "logging.h"
 #include "ber.h"
 
-#if CONTIKI_TARGET_AVR_RAVEN && ENABLE_PROGMEM
+#if CONTIKI_TARGET_AVR_RAVEN || CONTIKI_TARGET_AVR_ZIGBIT
 #include <avr/pgmspace.h>
 #endif
 
@@ -51,7 +51,7 @@ void oid_free(ptr_t* ptr)
 
 u16t oid_length(ptr_t* oid)
 {
-    #if CONTIKI_TARGET_AVR_RAVEN && ENABLE_PROGMEM
+    #if CONTIKI_TARGET_AVR_RAVEN || CONTIKI_TARGET_AVR_ZIGBIT
         return pgm_read_word(&oid->len);
     #else
         return oid->len;
@@ -60,7 +60,7 @@ u16t oid_length(ptr_t* oid)
 
 int oid_cmp(ptr_t* req_oid, ptr_t*  progmem_oid)
 {
-    #if CONTIKI_TARGET_AVR_RAVEN && ENABLE_PROGMEM
+    #if CONTIKI_TARGET_AVR_RAVEN || CONTIKI_TARGET_AVR_ZIGBIT
         u16t len = oid_length(progmem_oid);
         return memcmp_P(req_oid->ptr, (PGM_P)pgm_read_word(&progmem_oid->ptr), min(req_oid->len, len));
     #else
@@ -70,7 +70,7 @@ int oid_cmp(ptr_t* req_oid, ptr_t*  progmem_oid)
 
 int oid_cmpn(ptr_t* req_oid, ptr_t*  progmem_oid, u8t len)
 {
-    #if CONTIKI_TARGET_AVR_RAVEN && ENABLE_PROGMEM
+    #if CONTIKI_TARGET_AVR_RAVEN || CONTIKI_TARGET_AVR_ZIGBIT
         return memcmp_P(req_oid->ptr, (PGM_P)pgm_read_word(&progmem_oid->ptr), min(req_oid->len, len));
     #else
         return memcmp(req_oid->ptr, progmem_oid->ptr, min(req_oid->len, len));
@@ -80,7 +80,7 @@ int oid_cmpn(ptr_t* req_oid, ptr_t*  progmem_oid, u8t len)
 
 s8t oid_copy(ptr_t* dest, ptr_t* src, u8t malloc_len)
 {
-    #if CONTIKI_TARGET_AVR_RAVEN && ENABLE_PROGMEM
+    #if CONTIKI_TARGET_AVR_RAVEN || CONTIKI_TARGET_AVR_ZIGBIT
         dest->len = oid_length(src);
     #else
         dest->len = src->len;
@@ -93,7 +93,7 @@ s8t oid_copy(ptr_t* dest, ptr_t* src, u8t malloc_len)
     }
     CHECK_PTR(dest->ptr);
     
-    #if CONTIKI_TARGET_AVR_RAVEN && ENABLE_PROGMEM
+    #if CONTIKI_TARGET_AVR_RAVEN || CONTIKI_TARGET_AVR_ZIGBIT
         memcpy_P(dest->ptr, (PGM_P)pgm_read_word(&src->ptr), dest->len);
     #else
         memcpy(dest->ptr, src->ptr, dest->len);

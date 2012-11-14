@@ -36,8 +36,13 @@
 #include "msg-proc-v3.h"
 #endif
 
+/*sz*/
+/** \brief Enable Printf() Debugging*/
+#define PDEBUG 1
+/*sz*/
+
 /** \brief The total number of messages delivered to the SNMP entity from the transport service. */
-u32t snmpInPkts = 0;
+static u32t snmpInPkts = 0;
 /** \brief The total number of SNMP messages which were delivered to the SNMP entity and were for an unsupported SNMP version. */
 u32t snmpInBadVersions = 0;
 /** \brief The total number of ASN.1 or BER errors encountered by the SNMP entity when decoding received SNMP messages. */
@@ -77,26 +82,32 @@ void incSilentDrops()
 s8t dispatch(u8t* const input,  const u16t input_len, u8t* output, u16t* output_len, const u16t max_output_len)
 {
     snmpInPkts++;
+#if PDEBUG
+	printf("snmpInPkts = %d\n",getSnmpInPkts());
+#endif
     snmp_log("---------------------------------\n");
-    
+
     /* too big incoming message */
     if (input_len > MAX_BUF_SIZE) {
         snmp_log("discard the message, its size [%d] is too big\n", input_len);
         return FAILURE;
     }
-    
+
     u16t pos = 0;
     s32t tmp;
 
     /* decode sequence & version */
     if ((ber_decode_sequence(input, input_len, &pos)) != ERR_NO_ERROR ||
         ber_decode_integer(input, input_len, &pos, &tmp) != ERR_NO_ERROR) {
+	#if PDEBUG
+		printf("Dispatcher: Error! Could not decode message ASNParseError.\n");
+	#endif
         snmpInASNParseErrs++;
         return FAILURE;
     }
 
     /* create the right message_t data structure */
-    message_t* msg_ptr;    
+    message_t* msg_ptr;
     switch (tmp) {
 #if ENABLE_SNMPv1
         case SNMP_VERSION_1:
@@ -113,6 +124,9 @@ s8t dispatch(u8t* const input,  const u16t input_len, u8t* output, u16t* output_
         default:
             /* If the version is not supported, it discards the datagram and performs no further actions. */
             snmpInBadVersions++;
+		#if PDEBUG
+			printf("Dispatcher: Error! Wrong SNMP Version %d\n", msg_ptr->version);
+		#endif
             snmp_log("unsupported SNMP version %d\n", tmp);
             return ERR_UNSUPPORTED_VERSION;
     }
@@ -123,11 +137,17 @@ s8t dispatch(u8t* const input,  const u16t input_len, u8t* output, u16t* output_
     switch (msg_ptr->version) {
 #if ENABLE_SNMPv1
         case SNMP_VERSION_1:
+				#if PDEBUG
+				printf("Dispatcher: Info: prepareDataElements_v1\n");
+				#endif
             tmp = prepareDataElements_v1(input, input_len, &pos, (message_t*)msg_ptr);
             break;
 #endif
 #if ENABLE_SNMPv3
         case SNMP_VERSION_3:
+				#if PDEBUG
+				printf("Dispatcher: Info: prepareDataElements_v3\n");
+				#endif
             tmp = prepareDataElements_v3(input, input_len, &pos, (message_v3_t*)msg_ptr);
             break;
 #endif
@@ -145,11 +165,17 @@ s8t dispatch(u8t* const input,  const u16t input_len, u8t* output, u16t* output_
     switch (msg_ptr->version) {
 #if ENABLE_SNMPv1
         case SNMP_VERSION_1:
+				#if PDEBUG
+				printf("Dispatcher: Info: response for version 1\n");
+				#endif
             tmp = prepareResponseMessage_v1((message_t*)msg_ptr, output, output_len, input, input_len, max_output_len);
             break;
 #endif
 #if ENABLE_SNMPv3
         case SNMP_VERSION_3:
+				#if PDEBUG
+				printf("Dispatcher: Info: response for version 3\n");
+				#endif
             tmp = prepareResponseMessage_v3((message_v3_t*)msg_ptr, output, output_len, input, input_len, max_output_len);
             break;
 #endif
@@ -157,6 +183,9 @@ s8t dispatch(u8t* const input,  const u16t input_len, u8t* output, u16t* output_
     free_message(msg_ptr);
     if (tmp != ERR_NO_ERROR) {
         return FAILURE;
+		#if PDEBUG
+		printf("Dispatcher: Error! Could not decode message ASNParseError2.\n");
+		#endif
     }
     return 0;
 }

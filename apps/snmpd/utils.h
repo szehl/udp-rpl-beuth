@@ -18,7 +18,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  */
-
+ 
+ 
+ 
+/*sz*/
+/*Enable Printf() Debugging*/
+#define PDEBUG 0
+/*sz*/
+ 
+ 
 /**
  * \file
  *         Utility facilites for the SNMP server
@@ -43,7 +51,14 @@
 #define CHECK_PTR_U(ptr) if (!ptr) { snmp_log("can not allocate memory, line: %d\n", __LINE__); return 0; }
 
 /** \brief */
+/*sz*/
+#if PDEBUG==0
 #define TRY(c) if (c < 0) { snmp_log("exception line: %d\n", __LINE__); return FAILURE; }
+#endif
+#if PDEBUG
+#define TRY(c) if (c < 0) { printf("exception line: %d\n", __LINE__); return FAILURE; }
+#endif
+/*sz*/
 
 #define DECN(pos, value) (*pos) -= value; if (*pos < 0) { snmp_log("too big message: %d\n", __LINE__); return -1;}
 

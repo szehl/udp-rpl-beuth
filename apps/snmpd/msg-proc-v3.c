@@ -29,6 +29,12 @@
 #include "usm.h"
 #include "snmpd.h"
 
+/*sz*/
+/*Enable Printf() Debugging*/
+/** \brief Enable Printf() Debugging*/
+#define PDEBUG 0
+/*sz*/
+
 #if ENABLE_SNMPv3
 
 s8t prepareDataElements_v3(u8t* const input, const u16t input_len, u16t* pos, message_v3_t* request)
@@ -58,6 +64,9 @@ s8t prepareDataElements_v3(u8t* const input, const u16t input_len, u16t* pos, me
     snmp_log("msgFlags: %d\n", request->msgFlags);
     if (!(request->msgFlags & FLAG_AUTH) && (request->msgFlags & FLAG_PRIV)) {
         /* If the authFlag is not set and privFlag is set, then the message is discarded without further processing */
+		#if PDEBUG
+		printf("msg-proc-v3: Error not allowed message flag combination!\n");
+		#endif
         return FAILURE;
     }
 
@@ -69,7 +78,7 @@ s8t prepareDataElements_v3(u8t* const input, const u16t input_len, u16t* pos, me
     s8t ret;
     switch (int_value) {
         case USM_SECURITY_MODEL:
-            /* Authentication & Privacy validations */            
+            /* Authentication & Privacy validations */
             ret = processIncomingMsg_USM(input, input_len, pos, request);
             if (ret == FAILURE) {
                 return FAILURE;
@@ -80,6 +89,9 @@ s8t prepareDataElements_v3(u8t* const input, const u16t input_len, u16t* pos, me
             break;
         default:
             snmp_log("unsupported security model [%d]\n", request->msgSecurityModel);
+			#if PDEBUG
+			printf("unsupported security model [%d]\n", int_value);
+			#endif
             return FAILURE;
     }
 
@@ -135,7 +147,7 @@ static s8t encode_v3_response(message_v3_t* message, u8t* output, u16t* output_l
     /* sequence header*/
     TRY(ber_encode_type_length(output, &pos, BER_TYPE_SEQUENCE, max_output_len - pos));
     *output_len = max_output_len - pos;
-    
+
     if (message->msgFlags & FLAG_AUTH) {
         authenticate(message, &output[pos], *output_len);
     }
@@ -149,7 +161,7 @@ s8t prepareResponseMessage_v3(message_v3_t* message, u8t* output, u16t* output_l
 {
     message->msgFlags   &= (FLAG_AUTH | FLAG_PRIV);
     memcpy(&message->contextEngineID, getEngineID(), sizeof(ptr_t));
-    
+
     if (encode_v3_response(message, output, output_len, input, input_len, max_output_len) != ERR_NO_ERROR) {
         // tooBig error
         varbind_list_item_t*  varbind_first_ptr = message->pdu.varbind_first_ptr;

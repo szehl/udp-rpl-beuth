@@ -196,7 +196,7 @@ void mib_iterator_next() {
 }
 
 
-#if CONTIKI_TARGET_AVR_RAVEN
+#if CONTIKI_TARGET_AVR_RAVEN || CONTIKI_TARGET_AVR_ZIGBIT
 #include <avr/pgmspace.h>
 #else
 #endif

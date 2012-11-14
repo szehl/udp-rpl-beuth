@@ -17,6 +17,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
+ * 09-07-2012 added RFC3414 confrom non volatile snmpEngineBoots functionality -> see lines marked with "sz"
+ * 16-07-2012 added pseudo random value generation for 64bit integer at boot time, used to generate IV in AES 
+ * algorithm. defined in RFC3826 -> see lines marked with "sz"
+ * Sven Zehl - sven@zehl.co.cc
+ *
  */
 
 /**
@@ -31,13 +36,13 @@
 
 #include "snmpd-types.h"
 
-#define ENABLE_SNMPv1   1
+#define ENABLE_SNMPv1   0
 
-#define ENABLE_SNMPv3   0
+#define ENABLE_SNMPv3   1
 
-#define ENABLE_PRIVACY  0
+#define ENABLE_PRIVACY  1
 
-#define ENABLE_AUTH     0
+#define ENABLE_AUTH     1
 
 /** \brief maximum length of an SNMP message. */
 #define MAX_BUF_SIZE    484
@@ -50,15 +55,19 @@
 #define COMMUNITY_STRING        "public"
 
 #if ENABLE_SNMPv3
-    u32t getMsgAuthoritativeEngineBoots();
+	/*sz*/
+    /*u32t getMsgAuthoritativeEngineBoots();*/
+	/*moved to snmpd.h*/
+	/*sz*/
 
     ptr_t* getEngineID();
 
     u8t* getUserName();
-
-    u32t getLPrivacyParameters();
-
-    u32t getHPrivacyParameters();
+	/*sz*/
+    /*u32t getLPrivacyParameters();*/
+    /*u32t getHPrivacyParameters();*/
+	/*moved to snmpd.h*/
+	/*sz*/
 #endif
 
 #endif	/* __SNMP_CONF_H__ */

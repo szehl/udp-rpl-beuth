@@ -112,7 +112,7 @@ struct mib_object_t {
  *  \param value_type   type of the value of the object.
  *  \param value        initial value of the object.
  *  \param gfp          a pointer to a get value function.
- *  \param svfp         a pointer to a set value function.
+ *  \param svfp         a pinter to a set value function.
  *  \return 0 if successfully finished, otherwise -1.
  */
 s8t add_scalar(ptr_t* oid, u8t flags, u8t value_type, const void* const value, get_value_t gfp, set_value_t svfp);
@@ -122,7 +122,7 @@ s8t add_scalar(ptr_t* oid, u8t flags, u8t value_type, const void* const value, g
  *  \param oid_prefix   oid prefix of the object.
  *  \param gfp          a pointer to a get value function.
  *  \param gfp          a pointer to a get next oid function.
- *  \param svfp         a pointer to a set value function.
+ *  \param svfp         a pinter to a set value function.
  *  \return 0 if successfully finished, otherwise -1.
  */
 s8t add_table(ptr_t* oid_prefix, get_value_t gfp, get_next_oid_t gnofp, set_value_t svfp);

@@ -17,8 +17,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
+ * 09-07-2012 added RFC3414 confrom non volatile snmpEngineBoots functionality -> see lines marked with "sz"
+ * 16-07-2012 added pseudo random value generation for 64bit integer at boot time, used to generate IV in AES 
+ * algorithm. defined in RFC3826 -> see lines marked with "sz"
+ * Sven Zehl - sven@zehl.co.cc
  */
 #include "snmpd-conf.h"
+
 
 #if ENABLE_SNMPv3
 
@@ -29,14 +34,22 @@ ptr_t msgAuthoritativeEngineID = {msgAuthoritativeEngineID_array, 13};
 
 u8t* usmUserName = (u8t*)"sk";
 
-u32t privacyLow = 0xA6F89012;
-u32t privacyHigh = 0xF9434568;
 
+
+/*sz*/
+/* removed here, now pseudo random generated in snmpd.c */
+//u32t privacyLow = 0xA6F89012;
+//u32t privacyHigh = 0xF9434568;
+
+/*
 u32t getMsgAuthoritativeEngineBoots()
 {
     return 0;
 }
+*/
+/* getMsgAuthoritativeEngineBoots() moved to snmpd.c, now saved in non volatile memory.*/
 
+/*
 u32t getLPrivacyParameters()
 {
     privacyLow++;
@@ -48,6 +61,9 @@ u32t getHPrivacyParameters()
     privacyHigh++;
     return privacyHigh;
 }
+*/
+/*sz*/
+
 
 ptr_t* getEngineID()
 {
