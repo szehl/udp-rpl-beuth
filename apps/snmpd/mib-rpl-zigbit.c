@@ -1493,14 +1493,14 @@ ptr_t* getNextOIDRplMsgStatsEntry(mib_object_t* object, u8t* oid, u8t len) {
  */
 s8t mib_init()
 {
-  s32t defaultServiceValue = 78;
+  //s32t defaultServiceValue = 78;
   s32t defaultSnmpEnableAuthenTraps = 2;
   s32t ifNumber = 1;
   char* sysDesc = "AVR Zigbit (RPL Mote)";
-  char* sysContact = "Anuj Sehgal <s.anuj@jacobs-university.de>";
-  char* sysName = "RPL-MIB Test Mote";
-  char* sysLocation = "Jacobs University Bremen";
-
+  //char* sysContact = "Anuj Sehgal <s.anuj@jacobs-university.de>";
+  //char* sysName = "RPL-MIB Test Mote";
+  //char* sysLocation = "Jacobs University Bremen";
+/*
   // system group
   if (add_scalar(&oid_system_sysDesc, FLAG_ACCESS_READONLY, BER_TYPE_OCTET_STRING, sysDesc, 0, 0) == -1 ||
       add_scalar(&oid_system_sysObjectId, FLAG_ACCESS_READONLY, BER_TYPE_OID, &oid_jacobs_raven, 0, 0) == -1 ||
@@ -1509,6 +1509,12 @@ s8t mib_init()
       add_scalar(&oid_system_sysName, 0, BER_TYPE_OCTET_STRING, sysName, 0, 0) == -1 ||
       add_scalar(&oid_system_sysLocation, 0, BER_TYPE_OCTET_STRING, sysLocation, 0, 0) == -1 ||
       add_scalar(&oid_system_sysServices, FLAG_ACCESS_READONLY, BER_TYPE_INTEGER, &defaultServiceValue, 0, 0) == -1 ||
+      add_scalar(&oid_system_sysORLastChange, FLAG_ACCESS_READONLY, BER_TYPE_TIME_TICKS, 0, 0, 0) == -1) {
+    return -1;
+  }
+  */
+    if (add_scalar(&oid_system_sysDesc, FLAG_ACCESS_READONLY, BER_TYPE_OCTET_STRING, sysDesc, 0, 0) == -1 ||
+      add_scalar(&oid_system_sysUpTime, FLAG_ACCESS_READONLY, BER_TYPE_TIME_TICKS, 0, &getTimeTicks, 0) == -1 ||
       add_scalar(&oid_system_sysORLastChange, FLAG_ACCESS_READONLY, BER_TYPE_TIME_TICKS, 0, 0, 0) == -1) {
     return -1;
   }

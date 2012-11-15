@@ -159,7 +159,7 @@ void clock_adjust_ticks(clock_time_t howmany);
 #define UIP_CONF_IPV6_REASSEMBLY 0
 #define UIP_CONF_NETIF_MAX_ADDRESSES  3
 #define UIP_CONF_ND6_MAX_PREFIXES     3
-#define UIP_CONF_ND6_MAX_NEIGHBORS    10  
+#define UIP_CONF_ND6_MAX_NEIGHBORS    6  
 #define UIP_CONF_ND6_MAX_DEFROUTERS   2
 #define UIP_CONF_UDP_CHECKSUMS   1
 #define UIP_CONF_TCP_SPLIT       1
@@ -167,10 +167,10 @@ void clock_adjust_ticks(clock_time_t howmany);
 /*sz*/
 /*configuration for neighbors and routes */
 /* See uip-ds6.h */
-#define UIP_CONF_DS6_NBR_NBU      6
+#define UIP_CONF_DS6_NBR_NBU      4
 #define UIP_CONF_DS6_DEFRT_NBU    2
 #define UIP_CONF_DS6_PREFIX_NBU   3
-#define UIP_CONF_DS6_ROUTE_NBU    6
+#define UIP_CONF_DS6_ROUTE_NBU    4
 #define UIP_CONF_DS6_ADDR_NBU     3
 #define UIP_CONF_DS6_MADDR_NBU    0
 #define UIP_CONF_DS6_AADDR_NBU    0
@@ -222,9 +222,9 @@ in /platform/avr-zigbit/contiki-conf.h */
 #define PACKET_BLINK_ZIGBIT_ENABLE
 
 
-//#define MAC_CONF_FREQUENCY=0x09 //900MHz
-#define MAC_CONF_FREQUENCY=0x24 //2400MHz
-#define MAC_CONF_NUMBER=0x02
+//#define MAC_CONF_FREQUENCY 0x09 //900MHz
+#define MAC_CONF_FREQUENCY 0x24 //2400MHz
+#define MAC_CONF_NUMBER 0x01
 
 /*
 #for using .sh-script initial value must
