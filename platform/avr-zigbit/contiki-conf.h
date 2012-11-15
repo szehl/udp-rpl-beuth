@@ -199,6 +199,41 @@ void clock_adjust_ticks(clock_time_t howmany);
 
 #endif /* RPL */
 
+/*ATANY Modules Settings*/
+
+/*activate to enable extern PA on 2,4GHz modules from ANS*/
+#define RF230BB_EXTERNAL_PA_ENABLED
+/*activate to test meshed networks*/
+//#define RF230_MAX_TX_POWER 15
+//#define DRF230_MIN_RX_POWER 30
+
+/*add one byte to the echo reply (uip6.c)
+used for sending echo request and reply
+with same frame length.
+for running the test send echo with 73byte data
+example= ping6 [dest] -s 73 */
+
+//#define ICMP_ECHO_MAX_TRANS_TEST
+
+/*disable ICMP Checksum check with UIP_CONF_IPV6_CHECKS=0 
+in /platform/avr-zigbit/contiki-conf.h */
+
+/*enable led blink when packet arrives, see tcpip.c, works only for ATANY-Module*/
+#define PACKET_BLINK_ZIGBIT_ENABLE
+
+
+//#define MAC_CONF_FREQUENCY=0x09 //900MHz
+#define MAC_CONF_FREQUENCY=0x24 //2400MHz
+#define MAC_CONF_NUMBER=0x02
+
+/*
+#for using .sh-script initial value must
+#CFLAGS+= -DMAC_CONF_NUMBER=0x09*/
+
+/*END ATANY*/
+
+
+
 
 /*sz*/
 /* These names are deprecated, use C99 names. */

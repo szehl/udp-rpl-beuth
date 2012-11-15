@@ -48,7 +48,6 @@
 /*sz*/
 
 #define CHECK_STACK_SIZE 0
-#define PACKET_BLINK_ZIGBIT_ENABLE
 
 #define UDP_IP_BUF   ((struct uip_udpip_hdr *)&uip_buf[UIP_LLH_LEN])
 

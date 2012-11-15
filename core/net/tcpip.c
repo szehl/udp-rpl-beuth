@@ -48,9 +48,10 @@
 #endif
 
 /*sz*/
+#ifdef PACKET_BLINK_ZIGBIT_ENABLE
 #include <avr/eeprom.h>
 #include <avr/io.h>
-#define PACKET_BLINK_ZIGBIT_ENABLE
+#endif
 /*sz*/
 
 #include <string.h>
