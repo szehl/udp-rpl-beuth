@@ -232,9 +232,6 @@ in /platform/avr-zigbit/contiki-conf.h */
 
 /*END ATANY*/
 
-
-
-
 /*sz*/
 /* These names are deprecated, use C99 names. */
 /*

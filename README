@@ -1,7 +1,7 @@
 The Contiki OS
 --------------
 
-This repository holds a modified version of the Contiki OS. The
+This repository holds a modified version of the Contiki OS with Contiki SNMP and the RPL MIB. The
 platforms have been modified to interoperate without any further
 changes to the setting. Currently, the following platforms
 interoperate:
@@ -9,9 +9,7 @@ interoperate:
      - AVR Raven (avr-raven)
      - Telos B / TMote SKy (sky)
      - Redbee Econotag (redbee-econotag)
-
-A network consisting of the all the above motes, interoperating 
-using the Contiki RPL implementation has been tested to work.
+     - AVR Zigbit (avr-zigbit) -experimental-
 
 =======
 
