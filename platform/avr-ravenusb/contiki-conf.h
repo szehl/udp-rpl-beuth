@@ -226,10 +226,10 @@ extern void mac_log_802_15_4_rx(const uint8_t* buffer, size_t total_len);
 #endif /* UIP_CONF_IPV6 */
 
 /* See uip-ds6.h */
-#define UIP_CONF_DS6_NBR_NBU     2
+#define UIP_CONF_DS6_NBR_NBU     10
 #define UIP_CONF_DS6_DEFRT_NBU   2
 #define UIP_CONF_DS6_PREFIX_NBU  3
-#define UIP_CONF_DS6_ROUTE_NBU   2
+#define UIP_CONF_DS6_ROUTE_NBU   10
 #define UIP_CONF_DS6_ADDR_NBU    3
 #define UIP_CONF_DS6_MADDR_NBU   0
 #define UIP_CONF_DS6_AADDR_NBU   0
