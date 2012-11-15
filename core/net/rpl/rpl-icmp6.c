@@ -261,8 +261,15 @@ dio_input(void)
   } else {
     PRINTF("RPL: Neighbor already in neighbor cache\n");
   }
-
+  
+/*sz*/
+#if CONTIKI_TARGET_AVR_RAVENUSB && UIP_CONF_IPV6
+  buffer_length = uip_len - uip_l3_icmp_hdr_len+UIP_CONF_LLH_LEN;
+#else
   buffer_length = uip_len - uip_l3_icmp_hdr_len;
+#endif
+/*sz*/  
+  
 
   /* Process the DIO base option. */
   i = 0;
@@ -597,8 +604,14 @@ dao_input(void)
   PRINTF("\n");
 
   buffer = UIP_ICMP_PAYLOAD;
+  //buffer_length = uip_len - uip_l3_icmp_hdr_len;
+/*sz*/
+#if CONTIKI_TARGET_AVR_RAVENUSB && UIP_CONF_IPV6
+  buffer_length = uip_len - uip_l3_icmp_hdr_len+UIP_CONF_LLH_LEN;
+#else
   buffer_length = uip_len - uip_l3_icmp_hdr_len;
-
+#endif  
+/*sz*/
   pos = 0;
   instance_id = buffer[pos++];
 
@@ -799,8 +812,14 @@ dao_ack_input(void)
   uint8_t status;
 
   buffer = UIP_ICMP_PAYLOAD;
+  //buffer_length = uip_len - uip_l3_icmp_hdr_len;
+/*sz*/  
+#if CONTIKI_TARGET_AVR_RAVENUSB && UIP_CONF_IPV6
+  buffer_length = uip_len - uip_l3_icmp_hdr_len+UIP_CONF_LLH_LEN;
+#else
   buffer_length = uip_len - uip_l3_icmp_hdr_len;
-
+#endif  
+/*sz*/
   instance_id = buffer[0];
   sequence = buffer[2];
   status = buffer[3];

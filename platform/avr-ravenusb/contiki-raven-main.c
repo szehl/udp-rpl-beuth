@@ -121,6 +121,14 @@ struct rtimer rt;
 void rtimercycle(void) {rtimerflag=1;}
 #endif /* TESTRTIMER */
 
+
+/*sz*/
+//uip_ip6addr_t ipaddr;
+//uip_ip6addr(&ipaddr, 0xbbbb, 0, 0, 0, 0, 0, 0, 0x200);
+//uip_ds6_addr_add(&ipaddr, 0, ADDR_MANUAL);
+//rpl_set_prefix(dag, &ipaddr, 64);
+/*sz*/
+
 #if UIP_CONF_IPV6_RPL
 /*---------------------------------------------------------------------------*/
 /*---------------------------------  RPL   ----------------------------------*/
@@ -723,3 +731,6 @@ extern uint8_t debugflowsize,debugflow[];  //in rf230bb.c
   }
   return 0;
 }
+
+
+

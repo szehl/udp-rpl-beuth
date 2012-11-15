@@ -62,3 +62,6 @@ AVRDUDE_OPTIONS=-V
 include $(CONTIKIAVR)/Makefile.avr
 include $(CONTIKIAVR)/radio/Makefile.radio
 
+usb0up:
+	sudo ifconfig usb0 -arp
+	sudo ip -6 address add bbbb::1/64 dev usb0
