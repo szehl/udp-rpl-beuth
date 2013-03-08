@@ -448,10 +448,6 @@ ptr_t* getNextOIDRplOCPEntry(mib_object_t* object, u8t* oid, u8t len) {
   i = ber_decode_oid_item(oid, len, &oid_el1);
   i = ber_decode_oid_item(oid + i, len - i, &oid_el2);
 
-  //printf("\ngetNextOIDRplOCPEntry\n");
-  //printf("oid_el1: %d\n", oid_el1);
-  //printf("oid_el2: %d\n", oid_el2);
-
   if (oid_el1 < RplOCPColumns[0] || (oid_el1 == RplOCPColumns[0] && oid_el2 < RPL_OF.ocp)) {
     ret = oid_create();
     CHECK_PTR_U(ret);
@@ -461,7 +457,6 @@ ptr_t* getNextOIDRplOCPEntry(mib_object_t* object, u8t* oid, u8t len) {
 
     ret->ptr[0] = RplOCPColumns[0];
     ret->ptr[1] = RPL_OF.ocp;
-    //printf("Created: %d.%d\n", ret->ptr[0], ret->ptr[1]);
   }
   return ret;
 }
@@ -498,7 +493,6 @@ s8t getRplInstanceEntry(mib_object_t* object, u8t* oid, u8t len) {
 
   i = ber_decode_oid_item(oid, len, &oid_el1);
   i = ber_decode_oid_item(oid + i, len - i, &oid_el2);
-  //printf("getRplInstanceEntry - oid_el1.oid_el2: %d.%d\n", oid_el1, oid_el2);
 
   instance = rpl_get_instance(oid_el2);
   if (instance == NULL) {
@@ -559,14 +553,9 @@ ptr_t* getNextOIDRplInstanceEntry(mib_object_t* object, u8t* oid, u8t len) {
   i = ber_decode_oid_item(oid, len, &oid_el1);
   i = ber_decode_oid_item(oid + i, len - i, &oid_el2);
 
-  //printf("\ngetNextOIDRplInstanceEntry\n");
-  //printf("oid_el1: %d\n", oid_el1);
-  //printf("oid_el2: %d\n", oid_el2);
-
   for(i = 0; i < columnNumber; i++) {
     if (oid_el1 < RplInstanceColumns[i] || 
 	(oid_el1 == RplInstanceColumns[i] && (instance_loc(oid_el2) < RplInstanceTableSize || instance_loc(oid_el2) == -1))) {
-      //printf("Inside IF statement\n");
       ret = oid_create();
       CHECK_PTR_U(ret);
       ret->len = 2;
@@ -575,20 +564,12 @@ ptr_t* getNextOIDRplInstanceEntry(mib_object_t* object, u8t* oid, u8t len) {
       ret->ptr[0] = RplInstanceColumns[i];
       if (oid_el1 < RplInstanceColumns[i] || instance_loc(oid_el2) == -1) {
 	ret->ptr[1] = instance_table[0].instance_id;
-
-	//printf("Inside IF statement - 0.0 OID\n");
-	//ret->ptr[1] = 0;
-	//printf("Created [if]: %d.%d\n", ret->ptr[0], ret->ptr[1]);
       } else {
-	//printf("Inside IF statement - x.x OID\n");
-	
 	if(instance_loc(oid_el2) < RplInstanceTableSize) {
 	  ret->ptr[1] =  instance_table[instance_loc(oid_el2)].instance_id;	  
-	  //ret->ptr[1] =  instance_loc(oid_el2);	  
 	} else {
 	  return 0;
 	}	
-	//printf("Created [else]: %d.%d\n", ret->ptr[0], ret->ptr[1]);
       }
       break;
     }
@@ -650,7 +631,6 @@ s8t getRplDodagEntry(mib_object_t* object, u8t* oid, u8t len) {
   i = ber_decode_oid_item(oid, len, &oid_el1);
   i = i + ber_decode_oid_item(oid + i, len - i, &oid_el2);
   i = i + ber_decode_oid_item(oid + i, len - i, &oid_el3);
-  printf("getRplDodagEntry - oid_el1.oid_el2.oid_el3: %d.%d.%d\n", oid_el1, oid_el2, oid_el3);
 
   instance = rpl_get_instance(oid_el2);
   if (instance == NULL) {
@@ -675,17 +655,14 @@ s8t getRplDodagEntry(mib_object_t* object, u8t* oid, u8t len) {
     case rplDodagVersion:
       object->varbind.value_type = BER_TYPE_UNSIGNED32;
       object->varbind.value.i_value = instance->dag_table[oid_el3-1].version;
-      //object->varbind.value.i_value = 0;
       break;
     case rplDodagRank:
       object->varbind.value_type = BER_TYPE_UNSIGNED32;
       object->varbind.value.i_value = instance->dag_table[oid_el3-1].rank;
-      //object->varbind.value.i_value = 0;
       break;
     case rplDodagState:
       object->varbind.value_type = BER_TYPE_INTEGER;
       object->varbind.value.i_value = instance->dag_table[oid_el3-1].grounded;
-      //object->varbind.value.i_value = 0;
       break;
     case rplDodagOCP:
       object->varbind.value_type = BER_TYPE_UNSIGNED32;
@@ -694,7 +671,6 @@ s8t getRplDodagEntry(mib_object_t* object, u8t* oid, u8t len) {
     case rplDodagDAODelay:
       object->varbind.value_type = BER_TYPE_UNSIGNED32;
       object->varbind.value.i_value = etimer_expiration_time(&instance->dao_timer.etimer);
-      //object->varbind.value.i_value = 0;
       break;
     case rplDodagDAOAckEnabled:
       object->varbind.value_type = BER_TYPE_INTEGER;
@@ -707,37 +683,30 @@ s8t getRplDodagEntry(mib_object_t* object, u8t* oid, u8t len) {
     case rplDodagPreference:
       object->varbind.value_type = BER_TYPE_UNSIGNED32;
       object->varbind.value.i_value = instance->dag_table[oid_el3-1].preference;
-      //object->varbind.value.i_value = 0;
       break;
     case rplDodagMinHopRankIncrease:
       object->varbind.value_type = BER_TYPE_UNSIGNED32;
       object->varbind.value.i_value = instance->min_hoprankinc;
-      //object->varbind.value.i_value = 0;
       break;
     case rplDodagMaxRankIncrease:
       object->varbind.value_type = BER_TYPE_UNSIGNED32;
       object->varbind.value.i_value = instance->max_rankinc;
-      //object->varbind.value.i_value = 0;
       break;
     case rplDodagIntervalDoublings:
       object->varbind.value_type = BER_TYPE_UNSIGNED32;
       object->varbind.value.i_value = instance->dio_intdoubl;
-      //object->varbind.value.i_value = 0;
       break;
     case rplDodagIntervalMin:
       object->varbind.value_type = BER_TYPE_UNSIGNED32;
       object->varbind.value.i_value = instance->dio_intmin;
-      //object->varbind.value.i_value = 0;
       break;
     case rplDodagRedundancyConstant:
       object->varbind.value_type = BER_TYPE_UNSIGNED32;
       object->varbind.value.i_value = instance->dio_redundancy;
-      //object->varbind.value.i_value = 0;
       break;
     case rplDodagPathControlSize:
       object->varbind.value_type = BER_TYPE_UNSIGNED32;
       object->varbind.value.i_value = instance->min_hoprankinc;
-      //object->varbind.value.i_value = 0;
       break;
     default:
       return -1;
@@ -760,45 +729,31 @@ ptr_t* getNextOIDRplDodagEntry(mib_object_t* object, u8t* oid, u8t len) {
   i = i + ber_decode_oid_item(oid + i, len - i, &oid_el2);
   i = i + ber_decode_oid_item(oid + i, len - i, &oid_el3);
 
-  //printf("\ngetNextOIDRplDodagEntry\n");
-  printf("oid_el1: %d\n", oid_el1);
-  printf("oid_el2: %d\n", oid_el2);
-  printf("oid_el3: %d\n", oid_el3);
-  
   for(i = 0; i < columnNumber; i++) {
-    printf("i: %d, columnNumber: %d, oid_el1: %d, RplDodagColumns[i]: %d, oid_el2: %d, RplInstanceTableSize: %d, oid_el3: %d, RplDodagTableSize: %d\n", i, columnNumber, oid_el1, RplDodagColumns[i], instance_loc(oid_el2), RplInstanceTableSize, oid_el3, RplDodagTableSize);
     if ((oid_el1 < RplDodagColumns[i]) || 
 	(oid_el1 == RplDodagColumns[i] && instance_loc(oid_el2) < RplInstanceTableSize) ||
 	(oid_el1 == RplDodagColumns[i] && oid_el3 < RplDodagTableSize)) {
-      printf("Inside IF statement\n");
       ret = oid_create();
       CHECK_PTR_U(ret);
       ret->len = 3;
       ret->ptr = malloc(3);
       CHECK_PTR_U(ret->ptr);
       if (oid_el1 < RplDodagColumns[i]) {
-	printf("Inside IF statement - 0.0.0 OID (%d < %d)\n", oid_el1, RplDodagColumns[i]);
 	ret->ptr[0] = RplDodagColumns[i];
 	ret->ptr[1] = instance_table[0].instance_id;
 	ret->ptr[2] = 1;
-	printf("Created [if]: %d.%d.%d\n", ret->ptr[0], ret->ptr[1], ret->ptr[2]);
       } else {
-	printf("Inside IF statement - x.x.x OID (%d == %d)\n", oid_el1, RplDodagColumns[i]);
-	printf("oid_el2: %d, first instance: %d\n", oid_el2, instance_table[0].instance_id);
 	if(instance_loc(oid_el2) == -1 && oid_el2 < instance_table[0].instance_id) {
-	  printf("Inside instance not found\n");
 	  ret->ptr[0] = RplDodagColumns[i];
 	  ret->ptr[1] = instance_table[0].instance_id;
 	  ret->ptr[2] = 1;	  
 	  return ret;
 	} 
 	if(instance_loc(oid_el2) < RplInstanceTableSize && oid_el3 < RplDodagTableSize) {
-	  printf("Inside oid_el2 < RplInstanceTableSize && oid_el3 < RplDodagTableSize\n");
 	  ret->ptr[0] = oid_el1;
 	  ret->ptr[1] = instance_table[instance_loc(oid_el2)].instance_id;
 	  ret->ptr[2] = oid_el3 + 1;
 	} else if (instance_loc(oid_el2) < RplInstanceTableSize && oid_el3 == RplDodagTableSize) {
-	  printf("Inside oid_el2 < RplInstanceTableSize && oid_el3 == RplDodagTableSize\n");
 	  if(instance_loc(oid_el2) + 1 <= RplInstanceTableSize) {
 	    ret->ptr[1] = instance_table[instance_loc(oid_el2)+1].instance_id;
 	  } else {
@@ -807,14 +762,12 @@ ptr_t* getNextOIDRplDodagEntry(mib_object_t* object, u8t* oid, u8t len) {
 	  ret->ptr[0] = oid_el1;
 	  ret->ptr[2] = 1;
 	} else if (instance_loc(oid_el2) == RplInstanceTableSize && oid_el3 < RplDodagTableSize) {
-	  printf("Inside oid_el2 == RplInstanceTableSize && oid_el3 < RplDodagTableSize\n");
 	  ret->ptr[0] = oid_el1;
 	  ret->ptr[1] = instance_table[instance_loc(oid_el2)].instance_id;
 	  ret->ptr[2] = oid_el3 + 1;
 	} else {
 	  return 0;
 	}
-	printf("Created [if]: %d.%d.%d\n", ret->ptr[0], ret->ptr[1], ret->ptr[2]);
       }
       break;
     }
@@ -864,14 +817,10 @@ s8t getRplDodagParentEntry(mib_object_t* object, u8t* oid, u8t len) {
 
   currentparent = list_head(instance->dag_table[oid_el3-1].parents);
 
-  printf("\nRequested OID: %d.%d.%d", oid_el1, oid_el2, oid_el3);
-  
   for (j = 0; j < 16; j++) {
     i = i + ber_decode_oid_item(oid + i, len - i, &oid_el4);
-    searchid[j] = oid_el4; //*( u8t* ) &oid_el4;
-    printf(".%d", oid_el4);
+    searchid[j] = oid_el4;
   }
-  printf("\n");
 
   for (j = 0; j < 16; j++) {
     if (searchid[j] != currentparent->addr.u8[j]) {
@@ -911,7 +860,6 @@ ptr_t* getNextOIDRplDodagParentEntry(mib_object_t* object, u8t* oid, u8t len) {
   i = ber_decode_oid_item(oid, len, &oid_el1);
   i = i + ber_decode_oid_item(oid + i, len - i, &oid_el2);
   i = i + ber_decode_oid_item(oid + i, len - i, &oid_el3);
-  printf("getNextOIDRplDodagParentEntry - Provided OID: %d.%d.%d\n", oid_el1, oid_el2, oid_el3);
 
   if (instance_table[0].dag_table[0].parents == NULL) {
     return 0;
@@ -919,7 +867,6 @@ ptr_t* getNextOIDRplDodagParentEntry(mib_object_t* object, u8t* oid, u8t len) {
   currentparent = list_head(instance_table[0].dag_table[0].parents);
 
   if(oid_el1 <= 0 || (instance_loc(oid_el2) == -1 && oid_el2 < instance_table[0].instance_id)) {
-    printf("Inside IF\n");
     /* rplDodagParentIf, rplInstanceID, rplDodagIndex */
     leng = ber_encoded_oid_item_length(RplDodagParentColumns[0]);
     leng = leng + ber_encoded_oid_item_length(instance_table[0].instance_id);
@@ -959,7 +906,6 @@ ptr_t* getNextOIDRplDodagParentEntry(mib_object_t* object, u8t* oid, u8t len) {
       }
     }
   } else {
-    printf("Inside ELSE");
     /* rplDodagParentIf, rplInstanceID, rplDodagIndex */
     leng = ber_encoded_oid_item_length(RplDodagParentColumns[0]);
     leng = leng + ber_encoded_oid_item_length(instance_table[0].instance_id);
@@ -1047,7 +993,7 @@ static const ptr_t oid_rplDodagChildEntry PROGMEM     = {ber_oid_rplDodagChildEn
 
 s8t loc_route(u8t *searchid, rpl_dag_t *dag) {
   int i, j;
-  extern uip_ds6_route_t uip_ds6_routing_table[]; //UIP_DS6_ROUTE_NB
+  extern uip_ds6_route_t uip_ds6_routing_table[];
 
   for (i = 0; i < UIP_DS6_ROUTE_NB; i++) {
     for (j = 0; j < 16; j++) {
@@ -1066,7 +1012,7 @@ s8t getRplDodagChildEntry(mib_object_t* object, u8t* oid, u8t len) {
   u8t i=0, j=0, pos=0;
   u8t searchid[16];
   rpl_instance_t *instance;
-  extern uip_ds6_route_t uip_ds6_routing_table[]; //UIP_DS6_ROUTE_NB
+  extern uip_ds6_route_t uip_ds6_routing_table[];
 
   if (len < 19) {
     return -1;
