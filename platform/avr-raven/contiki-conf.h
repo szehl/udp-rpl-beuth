@@ -62,6 +62,7 @@
  */
 /* Clock ticks per second */
 #define CLOCK_CONF_SECOND 128
+#define RPL_CONF_MAX_DAG_PER_INSTANCE 1
 #if 1
 /* 16 bit counter overflows every ~10 minutes */
 typedef unsigned short clock_time_t;
@@ -134,6 +135,7 @@ typedef unsigned short uip_stats_t;
 #define RF230_MAX_TX_POWER 15
 #define RF230_MIN_RX_POWER 30
  */
+
   /* The rf231 and atmega128rfa1 can use an rssi threshold for triggering rx_busy that saves 0.5ma in rx mode */
 /* 1 - 15 maps into -90 to -48 dBm; the register is written with RF230_MIN_RX_POWER/6 + 1. Undefine for -100dBm sensitivity */
 //#define RF230_MIN_RX_POWER        0

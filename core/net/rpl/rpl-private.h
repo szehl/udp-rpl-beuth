@@ -74,6 +74,7 @@
 #define RPL_CODE_SEC_DIO               0x81   /* Secure DIO */
 #define RPL_CODE_SEC_DAO               0x82   /* Secure DAO */
 #define RPL_CODE_SEC_DAO_ACK           0x83   /* Secure DAO ACK */
+#define RPL_CODE_CONS_CHECK            0x8A   /* Consistency Check */
 
 /* RPL control message options. */
 #define RPL_OPTION_PAD1                  0

@@ -62,7 +62,20 @@
 #define UIP_EXT_HDR_OPT_PADN_BUF  ((struct uip_ext_hdr_opt_padn *)&uip_buf[uip_l2_l3_hdr_len + uip_ext_opt_offset])
 #define UIP_EXT_HDR_OPT_RPL_BUF   ((struct uip_ext_hdr_opt_rpl *)&uip_buf[uip_l2_l3_hdr_len + uip_ext_opt_offset])
 /************************************************************************/
-int
+
+/*
+ * RPL-MIB counters
+ * Inserted by Anuj
+ */
+uint32_t MIBrplOBitSetDownwards = 0;
+uint32_t MIBrplOBitClearedUpwards = 0;
+uint32_t MIBrplFBitSet = 0;
+uint32_t MIBrplRBitSet = 0;
+uint32_t MIBrplNoInstanceIDs = 0;
+/*
+ * RPL-MIB additions end
+ */
+
 rpl_verify_header(int uip_ext_opt_offset)
 {
   rpl_instance_t *instance;
@@ -75,6 +88,7 @@ rpl_verify_header(int uip_ext_opt_offset)
   }
 
   if(UIP_EXT_HDR_OPT_RPL_BUF->flags & RPL_HDR_OPT_FWD_ERR) {
+    MIBrplFBitSet++;
     PRINTF("RPL: Forward error!\n");
     /* We should try to repair it, not implemented for the moment */
     return 2;
@@ -82,6 +96,7 @@ rpl_verify_header(int uip_ext_opt_offset)
 
   instance = rpl_get_instance(UIP_EXT_HDR_OPT_RPL_BUF->instance);
   if(instance == NULL) {
+    MIBrplNoInstanceIDs++;
     PRINTF("RPL: Unknown instance: %u\n",
            UIP_EXT_HDR_OPT_RPL_BUF->instance);
     return 1;
@@ -94,7 +109,10 @@ rpl_verify_header(int uip_ext_opt_offset)
 
   down = 0;
   if(UIP_EXT_HDR_OPT_RPL_BUF->flags & RPL_HDR_OPT_DOWN) {
+    MIBrplOBitSetDownwards++;
     down = 1;
+  } else {
+    MIBrplOBitClearedUpwards++;
   }
 
   PRINTF("RPL: Packet going %s\n", down == 1 ? "down" : "up");
@@ -105,6 +123,7 @@ rpl_verify_header(int uip_ext_opt_offset)
 	   UIP_EXT_HDR_OPT_RPL_BUF->senderrank, instance->current_dag->rank,
 	   sender_closer);
     if(UIP_EXT_HDR_OPT_RPL_BUF->flags & RPL_HDR_OPT_RANK_ERR) {
+      MIBrplRBitSet++;
       PRINTF("RPL: Rank error signalled in RPL option!\n");
       /* We should try to repair it, not implemented for the moment */
       return 3;

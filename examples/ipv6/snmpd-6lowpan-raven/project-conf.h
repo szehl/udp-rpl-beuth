@@ -1,0 +1,5 @@
+#define PROCESS_CONF_NO_PROCESS_NAMES 1
+#define UIP_CONF_TCP 0
+#define EUI64_ADDRESS {0x02, 0x11, 0x22, 0xff, 0xfe, 0x33, 0x44, 0x55};
+//#define RF230_MAX_TX_POWER 15
+//#define RF230_MIN_RX_POWER 30

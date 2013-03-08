@@ -69,6 +69,42 @@
 #include "net/neighbor-info.h"
 #include "net/netstack.h"
 
+/*                                                                                                                                   * The 6LoWPAN MIB objects
+ */
+uint32_t MIBlowpanReasmTimeout = SICSLOWPAN_REASS_MAXAGE;
+
+uint32_t MIBlowpanInReceives = 0;
+uint32_t MIBlowpanInHdrErrors = 0;
+//uint32_t MIBlowpanInMeshReceives = 0;
+//uint32_t MIBlowpanInMeshForwds = 0;
+//uint32_t MIBlowpanInMeshDelivers = 0;
+uint32_t MIBlowpanInReasmReqds = 0;
+uint32_t MIBlowpanInReasmFails = 0;
+uint32_t MIBlowpanInReasmOKs = 0;
+uint32_t MIBlowpanInCompReqds = 0;
+uint32_t MIBlowpanInCompFails = 0;
+uint32_t MIBlowpanInCompOKs = 0;
+uint32_t MIBlowpanInDiscards = 0;
+uint32_t MIBlowpanInDelivers = 0;
+uint32_t MIBlowpanOutRequests = 0;
+uint32_t MIBlowpanOutCompReqds = 0;
+uint32_t MIBlowpanOutCompFails = 0;
+uint32_t MIBlowpanOutCompOKs = 0;
+uint32_t MIBlowpanOutFragReqds = 0;
+uint32_t MIBlowpanOutFragFails = 0;
+uint32_t MIBlowpanOutFragOKs = 0;
+uint32_t MIBlowpanOutFragCreates = 0;
+//uint32_t MIBlowpanOutMeshHopLimitExceeds = 0;
+//uint32_t MIBlowpanOutMeshNoRoutes = 0;
+//uint32_t MIBlowpanOutMeshRequests = 0;
+//uint32_t MIBlowpanOutMeshForwds = 0;
+//uint32_t MIBlowpanOutMeshTransmits = 0;
+uint32_t MIBlowpanOutDiscards = 0;
+uint32_t MIBlowpanOutTransmits = 0;
+
+/*                                                                                                                                   * 6LoWPAN MIB objects end                                                                                                           */
+
+
 #define DEBUG 0
 #if DEBUG
 /* PRINTFI and PRINTFO are defined for input and output to debug one without changing the timing of the other */

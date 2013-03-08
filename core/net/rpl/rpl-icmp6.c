@@ -57,11 +57,26 @@
 
 #include "net/uip-debug.h"
 
+//Added by Anuj for RPL-MIB
+uint32_t MIBInDISCounter = 0;
+uint32_t MIBOutDISCounter = 0;
+uint32_t MIBInDIOCounter = 0;
+uint32_t MIBOutDIOCounter = 0;
+uint32_t MIBInDAOCounter = 0;
+uint32_t MIBOutDAOCounter = 0;
+uint32_t MIBInDAOAckCounter = 0;
+uint32_t MIBOutDAOAckCounter = 0;
+//Addition ends
+
 /*---------------------------------------------------------------------------*/
 #define RPL_DIO_GROUNDED                 0x80
 #define RPL_DIO_MOP_SHIFT                3
 #define RPL_DIO_MOP_MASK                 0x3c
 #define RPL_DIO_PREFERENCE_MASK          0x07
+
+//Added by Anuj for RPL-MIB
+uint8_t MIBrplDefaultPreference = RPL_DIO_PREFERENCE_MASK;
+//Addition ends
 
 #define UIP_IP_BUF       ((struct uip_ip_hdr *)&uip_buf[UIP_LLH_LEN])
 #define UIP_ICMP_BUF     ((struct uip_icmp_hdr *)&uip_buf[uip_l2_l3_hdr_len])
@@ -196,6 +211,7 @@ dis_output(uip_ipaddr_t *addr)
   PRINT6ADDR(addr);
   PRINTF("\n");
 
+  MIBOutDISCounter++;
   uip_icmp6_send(addr, ICMP6_RPL, RPL_CODE_DIS, 2);
 }
 /*---------------------------------------------------------------------------*/
@@ -526,6 +542,7 @@ dio_output(rpl_instance_t *instance, uip_ipaddr_t *uc_addr)
       (unsigned)dag->rank);
   PRINT6ADDR(uc_addr);
   PRINTF("\n");
+  MIBOutDIOCounter++;
   uip_icmp6_send(uc_addr, ICMP6_RPL, RPL_CODE_DIO, pos);
 #else /* RPL_LEAF_ONLY */
   /* Unicast requests get unicast replies! */
@@ -533,12 +550,14 @@ dio_output(rpl_instance_t *instance, uip_ipaddr_t *uc_addr)
     PRINTF("RPL: Sending a multicast-DIO with rank %u\n",
         (unsigned)instance->current_dag->rank);
     uip_create_linklocal_rplnodes_mcast(&addr);
+    MIBOutDIOCounter++;
     uip_icmp6_send(&addr, ICMP6_RPL, RPL_CODE_DIO, pos);
   } else {
     PRINTF("RPL: Sending unicast-DIO with rank %u to ",
         (unsigned)instance->current_dag->rank);
     PRINT6ADDR(uc_addr);
     PRINTF("\n");
+    MIBOutDIOCounter++;
     uip_icmp6_send(uc_addr, ICMP6_RPL, RPL_CODE_DIO, pos);
   }
 #endif /* RPL_LEAF_ONLY */
@@ -688,6 +707,7 @@ dao_input(void)
       PRINTF("RPL: Forwarding DAO to parent ");
       PRINT6ADDR(&dag->preferred_parent->addr);
       PRINTF("\n");
+      MIBOutDAOCounter++;
       uip_icmp6_send(&dag->preferred_parent->addr,
                      ICMP6_RPL, RPL_CODE_DAO, buffer_length);
     }
@@ -765,6 +785,7 @@ dao_output(rpl_parent_t *n, uint8_t lifetime)
   PRINT6ADDR(&n->addr);
   PRINTF("\n");
 
+  MIBOutDAOCounter++;
   uip_icmp6_send(&n->addr, ICMP6_RPL, RPL_CODE_DAO, pos);
 }
 /*---------------------------------------------------------------------------*/
@@ -806,6 +827,7 @@ dao_ack_output(rpl_instance_t *instance, uip_ipaddr_t *dest, uint8_t sequence)
   buffer[2] = sequence;
   buffer[3] = 0;
 
+  MIBOutDAOAckCounter++;
   uip_icmp6_send(dest, ICMP6_RPL, RPL_CODE_DAO_ACK, 4);
 }
 /*---------------------------------------------------------------------------*/
@@ -815,15 +837,19 @@ uip_rpl_input(void)
   PRINTF("Received an RPL control message\n");
   switch(UIP_ICMP_BUF->icode) {
   case RPL_CODE_DIO:
+    MIBInDIOCounter++;
     dio_input();
     break;
   case RPL_CODE_DIS:
+    MIBInDISCounter++;
     dis_input();
     break;
   case RPL_CODE_DAO:
+    MIBInDAOCounter++;
     dao_input();
     break;
   case RPL_CODE_DAO_ACK:
+    MIBInDAOAckCounter++;
     dao_ack_input();
     break;
   default:
