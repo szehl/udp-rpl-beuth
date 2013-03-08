@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Swedish Institute of Computer Science.
+ * Copyright (c) 20013, Jacobs University Bremen.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@
  *
  * This file is part of the Contiki operating system.
  *
- * $Id: webserver6.c,v 1.1 2008/10/14 22:04:16 c_oflynn Exp $
+ * Anuj Sehgal <s.anuj@jacobs-university.de>
  */
 
 #include "snmpd.h"
