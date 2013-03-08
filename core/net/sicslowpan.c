@@ -6,6 +6,9 @@
  * Copyright (c) 2008, Swedish Institute of Computer Science.
  * All rights reserved.
  *
+ * Copyright (c) 2013, Jacobs University Bremen.
+ * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -45,6 +48,7 @@
  * \author Julien Abeille <jabeille@cisco.com>
  * \author Joakim Eriksson <joakime@sics.se>
  * \author Joel Hoglund <joel@sics.se>
+ * \author Anuj Sehgal <s.anuj@jacobs-university.de>
  */
 
 /**
@@ -69,7 +73,8 @@
 #include "net/neighbor-info.h"
 #include "net/netstack.h"
 
-/*                                                                                                                                   * The 6LoWPAN MIB objects
+/*
+ * The 6LoWPAN MIB objects
  */
 uint32_t MIBlowpanReasmTimeout = SICSLOWPAN_REASS_MAXAGE;
 
@@ -102,7 +107,9 @@ uint32_t MIBlowpanOutFragCreates = 0;
 uint32_t MIBlowpanOutDiscards = 0;
 uint32_t MIBlowpanOutTransmits = 0;
 
-/*                                                                                                                                   * 6LoWPAN MIB objects end                                                                                                           */
+/*
+ * 6LoWPAN MIB objects end
+ */
 
 
 #define DEBUG 0
@@ -799,6 +806,8 @@ compress_hdr_hc06(rimeaddr_t *rime_destaddr)
   RIME_IPHC_BUF[1] = iphc1;
 
   rime_hdr_len = hc06_ptr - rime_ptr;
+  
+  MIBlowpanOutCompOKs++;
   return;
 }
 
@@ -903,6 +912,7 @@ uncompress_hdr_hc06(uint16_t ip_len)
       context = addr_context_lookup_by_number(sci);
       if(context == NULL) {
         PRINTF("sicslowpan uncompress_hdr: error context not found\n");
+	MIBlowpanInCompFails++;
         return;
       }
     }
@@ -951,6 +961,7 @@ uncompress_hdr_hc06(uint16_t ip_len)
       /* all valid cases below need the context! */
       if(context == NULL) {
 	PRINTF("sicslowpan uncompress_hdr: error context not found\n");
+	MIBlowpanInCompFails++;
 	return;
       }
       uncompress_addr(&SICSLOWPAN_IP_BUF->destipaddr, context->prefix,
@@ -1017,6 +1028,7 @@ uncompress_hdr_hc06(uint16_t ip_len)
 
       default:
 	PRINTF("sicslowpan uncompress_hdr: error unsupported UDP compression\n");
+	MIBlowpanInCompFails++;
 	return;
       }
       if(!checksum_compressed) { /* has_checksum, default  */
@@ -1053,6 +1065,7 @@ uncompress_hdr_hc06(uint16_t ip_len)
     memcpy(&SICSLOWPAN_UDP_BUF->udplen, &SICSLOWPAN_IP_BUF->len[0], 2);
   }
 
+  MIBlowpanInCompOKs++;
   return;
 }
 /** @} */
@@ -1201,6 +1214,7 @@ compress_hdr_hc1(rimeaddr_t *rime_destaddr)
 #endif /*UIP_CONF_UDP*/
     }
   }
+  MIBlowpanOutCompOKs++;
   return;
 }
 
@@ -1260,6 +1274,7 @@ uncompress_hdr_hc1(uint16_t ip_len)
         if(RIME_HC1_HC_UDP_PTR[RIME_HC1_HC_UDP_UDP_ENCODING] !=
            SICSLOWPAN_HC_UDP_ALL_C) {
           PRINTF("sicslowpan (uncompress_hdr), packet not supported");
+	  MIBlowpanInCompFails++;
           return;
         }
         /* IP TTL */
@@ -1281,6 +1296,7 @@ uncompress_hdr_hc1(uint16_t ip_len)
 #endif/* UIP_CONF_UDP */
     default:
       /* this shouldn't happen, drop */
+      MIBlowpanInCompFails++;
       return;
   }
   
@@ -1298,6 +1314,8 @@ uncompress_hdr_hc1(uint16_t ip_len)
   if(SICSLOWPAN_IP_BUF->proto == UIP_PROTO_UDP) {
     memcpy(&SICSLOWPAN_UDP_BUF->udplen, &SICSLOWPAN_IP_BUF->len[0], 2);
   }
+
+  MIBlowpanInCompOKs++;
   return;
 }
 /** @} */
@@ -1329,6 +1347,7 @@ compress_hdr_ipv6(rimeaddr_t *rime_destaddr)
   memcpy(rime_ptr + rime_hdr_len, UIP_IP_BUF, UIP_IPH_LEN);
   rime_hdr_len += UIP_IPH_LEN;
   uncomp_hdr_len += UIP_IPH_LEN;
+  MIBlowpanOutCompOKs++;
   return;
 }
 /** @} */
@@ -1392,6 +1411,9 @@ send_packet(rimeaddr_t *dest)
 static uint8_t
 output(uip_lladdr_t *localdest)
 {
+  
+  MIBlowpanOutRequests++;
+  
   /* The MAC address of the destination of the packet */
   rimeaddr_t dest;
 
@@ -1446,20 +1468,25 @@ output(uip_lladdr_t *localdest)
   if(uip_len >= COMPRESSION_THRESHOLD) {
     /* Try to compress the headers */
 #if SICSLOWPAN_COMPRESSION == SICSLOWPAN_COMPRESSION_HC1
+    MIBlowpanOutCompReqds++;
     compress_hdr_hc1(&dest);
 #endif /* SICSLOWPAN_COMPRESSION == SICSLOWPAN_COMPRESSION_HC1 */
 #if SICSLOWPAN_COMPRESSION == SICSLOWPAN_COMPRESSION_IPV6
+    MIBlowpanOutCompReqds++;
     compress_hdr_ipv6(&dest);
 #endif /* SICSLOWPAN_COMPRESSION == SICSLOWPAN_COMPRESSION_IPV6 */
 #if SICSLOWPAN_COMPRESSION == SICSLOWPAN_COMPRESSION_HC06
+    MIBlowpanOutCompReqds++;
     compress_hdr_hc06(&dest);
 #endif /* SICSLOWPAN_COMPRESSION == SICSLOWPAN_COMPRESSION_HC06 */
   } else {
+    MIBlowpanOutCompReqds++;
     compress_hdr_ipv6(&dest);
   }
   PRINTFO("sicslowpan output: header of len %d\n", rime_hdr_len);
 
   if(uip_len - uncomp_hdr_len > MAC_MAX_PAYLOAD - rime_hdr_len) {
+    MIBlowpanOutFragReqds++;
 #if SICSLOWPAN_CONF_FRAG
     struct queuebuf *q;
     /*
@@ -1500,8 +1527,12 @@ output(uip_lladdr_t *localdest)
     q = queuebuf_new_from_packetbuf();
     if(q == NULL) {
       PRINTFO("could not allocate queuebuf for first fragment, dropping packet\n");
+      MIBlowpanOutDiscards++;
       return 0;
     }
+
+    MIBlowpanOutFragCreates++;
+
     send_packet(&dest);
     queuebuf_to_packetbuf(q);
     queuebuf_free(q);
@@ -1514,6 +1545,8 @@ output(uip_lladdr_t *localdest)
       PRINTFO("error in fragment tx, dropping subsequent fragments.\n");
       return 0;
     }
+
+    MIBlowpanOutTransmits++;
 
     /* set processed_ip_out_len to what we already sent from the IP payload*/
     processed_ip_out_len = rime_payload_len + uncomp_hdr_len;
@@ -1546,8 +1579,12 @@ output(uip_lladdr_t *localdest)
       q = queuebuf_new_from_packetbuf();
       if(q == NULL) {
         PRINTFO("could not allocate queuebuf, dropping fragment\n");
+	MIBlowpanOutDiscards++;
         return 0;
       }
+
+      MIBlowpanOutFragCreates++;
+
       send_packet(&dest);
       queuebuf_to_packetbuf(q);
       queuebuf_free(q);
@@ -1561,7 +1598,11 @@ output(uip_lladdr_t *localdest)
         PRINTFO("error in fragment tx, dropping subsequent fragments.\n");
         return 0;
       }
+      
+      MIBlowpanOutTransmits++;
     }
+
+    MIBlowpanOutFragOKs++;
 #else /* SICSLOWPAN_CONF_FRAG */
     PRINTFO("sicslowpan output: Packet too large to be sent without fragmentation support; dropping packet\n");
     return 0;
@@ -1575,6 +1616,8 @@ output(uip_lladdr_t *localdest)
            uip_len - uncomp_hdr_len);
     packetbuf_set_datalen(uip_len - uncomp_hdr_len + rime_hdr_len);
     send_packet(&dest);
+
+    MIBlowpanOutTransmits++;
   }
   return 1;
 }
@@ -1595,6 +1638,8 @@ output(uip_lladdr_t *localdest)
 static void
 input(void)
 {
+  MIBlowpanInReceives++;
+
   /* size of the IP packet (read from fragment) */
   uint16_t frag_size = 0;
   /* offset of the fragment in the IP packet */
@@ -1615,6 +1660,9 @@ input(void)
 #if SICSLOWPAN_CONF_FRAG
   /* if reassembly timed out, cancel it */
   if(timer_expired(&reass_timer)) {
+    if(processed_ip_in_len > 0) {
+      MIBlowpanInReasmFails++;
+    }    
     sicslowpan_len = 0;
     processed_ip_in_len = 0;
   }
@@ -1628,6 +1676,9 @@ input(void)
       frag_offset = 0;
 /*       frag_size = (uip_ntohs(RIME_FRAG_BUF->dispatch_size) & 0x07ff); */
       frag_size = GET16(RIME_FRAG_PTR, RIME_FRAG_DISPATCH_SIZE) & 0x07ff;
+      if(frag_size > UIP_BUFSIZE){
+	MIBlowpanInDiscards++;
+      }
 /*       frag_tag = uip_ntohs(RIME_FRAG_BUF->tag); */
       frag_tag = GET16(RIME_FRAG_PTR, RIME_FRAG_TAG);
       PRINTFI("size %d, tag %d, offset %d)\n",
@@ -1635,6 +1686,7 @@ input(void)
       rime_hdr_len += SICSLOWPAN_FRAG1_HDR_LEN;
       /*      printf("frag1 %d %d\n", reass_tag, frag_tag);*/
       first_fragment = 1;
+      MIBlowpanInReasmReqds++;
       break;
     case SICSLOWPAN_DISPATCH_FRAGN:
       /*
@@ -1645,9 +1697,13 @@ input(void)
       frag_offset = RIME_FRAG_PTR[RIME_FRAG_OFFSET];
       frag_tag = GET16(RIME_FRAG_PTR, RIME_FRAG_TAG);
       frag_size = GET16(RIME_FRAG_PTR, RIME_FRAG_DISPATCH_SIZE) & 0x07ff;
+      if(frag_size > UIP_BUFSIZE){
+	MIBlowpanInDiscards++;
+      }
       PRINTFI("size %d, tag %d, offset %d)\n",
              frag_size, frag_tag, frag_offset);
       rime_hdr_len += SICSLOWPAN_FRAGN_HDR_LEN;
+      MIBlowpanInReasmReqds++;
 
       /* If this is the last fragment, we may shave off any extrenous
          bytes at the end. We must be liberal in what we accept. */
@@ -1675,6 +1731,7 @@ input(void)
        * being reassembled or the packet is not a fragment.
        */
       PRINTFI("sicslowpan input: Dropping 6lowpan packet that is not a fragment of the packet currently being reassembled\n");
+      MIBlowpanInDiscards++;
       return;
     }
   } else {
@@ -1702,6 +1759,7 @@ input(void)
 #if SICSLOWPAN_COMPRESSION == SICSLOWPAN_COMPRESSION_HC06
   if((RIME_HC1_PTR[RIME_HC1_DISPATCH] & 0xe0) == SICSLOWPAN_DISPATCH_IPHC) {
     PRINTFI("sicslowpan input: IPHC\n");
+    MIBlowpanInCompReqds++;
     uncompress_hdr_hc06(frag_size);
   } else
 #endif /* SICSLOWPAN_COMPRESSION == SICSLOWPAN_COMPRESSION_HC06 */
@@ -1709,6 +1767,7 @@ input(void)
 #if SICSLOWPAN_COMPRESSION == SICSLOWPAN_COMPRESSION_HC1
     case SICSLOWPAN_DISPATCH_HC1:
       PRINTFI("sicslowpan input: HC1\n");
+      MIBlowpanInCompReqds++;
       uncompress_hdr_hc1(frag_size);
       break;
 #endif /* SICSLOWPAN_COMPRESSION == SICSLOWPAN_COMPRESSION_HC1 */
@@ -1725,6 +1784,7 @@ input(void)
       break;
     default:
       /* unknown header */
+      MIBlowpanInHdrErrors++;
       PRINTFI("sicslowpan input: unknown dispatch: %u\n",
              RIME_HC1_PTR[RIME_HC1_DISPATCH]);
       return;
@@ -1743,6 +1803,7 @@ input(void)
    */
   if(packetbuf_datalen() < rime_hdr_len) {
     PRINTF("SICSLOWPAN: packet dropped due to header > total packet\n");
+    MIBlowpanInReasmFails++;
     return;
   }
   rime_payload_len = packetbuf_datalen() - rime_hdr_len;
@@ -1782,6 +1843,9 @@ input(void)
            sicslowpan_len);
     memcpy((uint8_t *)UIP_IP_BUF, (uint8_t *)SICSLOWPAN_IP_BUF, sicslowpan_len);
     uip_len = sicslowpan_len;
+    if(processed_ip_in_len > 0) {
+      MIBlowpanInReasmOKs++;
+    }
     sicslowpan_len = 0;
     processed_ip_in_len = 0;
 #endif /* SICSLOWPAN_CONF_FRAG */
@@ -1809,6 +1873,7 @@ input(void)
     }
 
     tcpip_input();
+    MIBlowpanInDelivers++;
 #if SICSLOWPAN_CONF_FRAG
   }
 #endif /* SICSLOWPAN_CONF_FRAG */
