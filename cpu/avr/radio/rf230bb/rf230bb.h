@@ -226,6 +226,10 @@ extern uint8_t rf230_last_correlation,rf230_last_rssi,rf230_smallest_rssi;
 
 uint8_t rf230_get_raw_rssi(void);
 
+//added by anuj for snmpd
+void radio_get_extended_address( uint8_t *extended_address );
+//addition ended
+
 #define rf230_rssi	rf230_get_raw_rssi
 
 #endif

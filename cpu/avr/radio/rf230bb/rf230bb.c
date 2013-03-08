@@ -1748,3 +1748,16 @@ void rf230_start_sneeze(void) {
     hal_register_write(0x02,0x02);       //Set TRX_STATE to TX_START
 }
 #endif
+
+void
+radio_get_extended_address(uint8_t *extended_address)
+{
+  *extended_address++ = hal_register_read(RG_IEEE_ADDR_7);
+  *extended_address++ = hal_register_read(RG_IEEE_ADDR_6);
+  *extended_address++ = hal_register_read(RG_IEEE_ADDR_5);
+  *extended_address++ = hal_register_read(RG_IEEE_ADDR_4);
+  *extended_address++ = hal_register_read(RG_IEEE_ADDR_3);
+  *extended_address++ = hal_register_read(RG_IEEE_ADDR_2);
+  *extended_address++ = hal_register_read(RG_IEEE_ADDR_1);
+  *extended_address   = hal_register_read(RG_IEEE_ADDR_0);
+}
