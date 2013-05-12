@@ -188,14 +188,14 @@ extern void mac_log_802_15_4_rx(const uint8_t* buffer, size_t total_len);
  * run-time configuration (COMx on Windows, ttyACMx on Linux, tty.usbmodemx on Mac)
  * Debug printfs will go to this port unless USB_CONF_RS232 is set.
  */
-#define USB_CONF_SERIAL          1
+#define USB_CONF_SERIAL          0
  
 /* RS232 debugs have less effect on network timing and are less likely
  * to be dropped due to buffer overflow. Only tx is implemented at present.
  * The tx pad is the middle one behind the jackdaw leds.
  * RS232 output will work with or without enabling the USB serial port
  */
-#define USB_CONF_RS232           1
+#define USB_CONF_RS232           0
 
 /* Disable mass storage enumeration for more program space */
 //#define USB_CONF_STORAGE         1   /* TODO: Mass storage is currently broken */

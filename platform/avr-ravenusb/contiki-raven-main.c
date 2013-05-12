@@ -186,8 +186,9 @@ PROCESS_THREAD(border_router_process, ev, data)
 //Currently this requires changes in the core rpl-icmp6.c to pass the link-local RA broadcast
 
 #else
+	//2001:638:812:b88b::/64
     uip_ip6addr_t ipaddr;
-    uip_ip6addr(&ipaddr, 0xbbbb, 0, 0, 0, 0, 0, 0, 0x200);
+    uip_ip6addr(&ipaddr, 0x2001, 0x0638, 0x0812, 0xb88b, 0, 0, 0, 0x200);
     uip_ds6_addr_add(&ipaddr, 0, ADDR_MANUAL);
     rpl_set_prefix(dag, &ipaddr, 64);
 #endif
@@ -573,9 +574,9 @@ uint16_t p=(uint16_t)&__bss_end;
   /* There are none in the default build so autostart_processes will be unresolved in the link. */
   /* The AUTOSTART_PROCESSES macro which defines it can only be used in the .co module. */
   /* See /examples/ravenusbstick/ravenusb.c for an autostart template. */
-#if 0
+//#if 0
   autostart_start(autostart_processes);
-#endif
+//#endif
 
 #if ANNOUNCE
 #if USB_CONF_RS232
