@@ -97,198 +97,185 @@ tcpip_handler(void)
     PRINTF("%d",
            UIP_IP_BUF->srcipaddr.u8[sizeof(UIP_IP_BUF->srcipaddr.u8) - 1]);
     PRINTF("\n");
-//#if SERVER_REPLY
     PRINTF("DATA sending reply\n");
     extern uip_ds6_nbr_t uip_ds6_nbr_cache[];
     extern uip_ds6_route_t uip_ds6_routing_table[];
 	extern uip_ds6_netif_t uip_ds6_if;
-
-   uint8_t i,j;
-   PRINTF("\nAddresses [%u max]\n",UIP_DS6_ADDR_NB);
-   for (i=0;i<UIP_DS6_ADDR_NB;i++) {
-     if (uip_ds6_if.addr_list[i].isused) {
-      ipaddr_add(&uip_ds6_if.addr_list[i].ipaddr);
-      PRINTF("\n");
-    }
-  }
-  PRINTF("\nNeighbors [%u max]\n",UIP_DS6_NBR_NB);
-  for(i = 0,j=1; i < UIP_DS6_NBR_NB; i++) {
-    if(uip_ds6_nbr_cache[i].isused) {
-      ipaddr_add(&uip_ds6_nbr_cache[i].ipaddr);
-      PRINTF("\n");
-      j=0;
-    }
-  }
-  if (j) PRINTF("  <none>");
-  PRINTF("\nRoutes [%u max]\n",UIP_DS6_ROUTE_NB);
-  for(i = 0,j=1; i < UIP_DS6_ROUTE_NB; i++) {
-    if(uip_ds6_routing_table[i].isused) {
-      ipaddr_add(&uip_ds6_routing_table[i].ipaddr);
-      PRINTF("/%u (via ", uip_ds6_routing_table[i].length);
-      ipaddr_add(&uip_ds6_routing_table[i].nexthop);
- //     if(uip_ds6_routing_table[i].state.lifetime < 600) {
-        PRINTF(") %lus\n", uip_ds6_routing_table[i].state.lifetime);
- //     } else {
+	uint8_t i,j;
+	PRINTF("\nAddresses [%u max]\n",UIP_DS6_ADDR_NB);
+	for (i=0;i<UIP_DS6_ADDR_NB;i++) {
+		if (uip_ds6_if.addr_list[i].isused) {
+			ipaddr_add(&uip_ds6_if.addr_list[i].ipaddr);
+			PRINTF("\n");
+		}
+	}
+	PRINTF("\nNeighbors [%u max]\n",UIP_DS6_NBR_NB);
+	for(i = 0,j=1; i < UIP_DS6_NBR_NB; i++) {
+		if(uip_ds6_nbr_cache[i].isused) {
+			ipaddr_add(&uip_ds6_nbr_cache[i].ipaddr);
+			PRINTF("\n");
+			j=0;
+		}
+	}
+	if (j) PRINTF("  <none>");
+		PRINTF("\nRoutes [%u max]\n",UIP_DS6_ROUTE_NB);
+	for(i = 0,j=1; i < UIP_DS6_ROUTE_NB; i++) {
+		if(uip_ds6_routing_table[i].isused) {
+			ipaddr_add(&uip_ds6_routing_table[i].ipaddr);
+			PRINTF("/%u (via ", uip_ds6_routing_table[i].length);
+			ipaddr_add(&uip_ds6_routing_table[i].nexthop);
+ //     	if(uip_ds6_routing_table[i].state.lifetime < 600) {
+			PRINTF(") %lus\n", uip_ds6_routing_table[i].state.lifetime);
+		} 
+		else {
  //       PRINTF(")\n");
- //     }
-      j=0;
-    }
-  }
-  if (j) PRINTF("  <none>");
-  PRINTF("\n---------\n");
-  
-  /*Make the message*/
-  sprintf(replyp, "##Neighbors#");
-  replyp=reply+strlen(reply);
-  for(i = 0,j=1; i < UIP_DS6_NBR_NB; i++) {
-    if(uip_ds6_nbr_cache[i].isused) {
-        ipaddrp=&uip_ds6_nbr_cache[i].ipaddr;
-      
-		uint16_t a;
-		int8_t i, f;
-		for(i = 0, f = 0; i < sizeof(uip_ipaddr_t); i += 2) {
-			a = (ipaddrp->u8[i] << 8) + ipaddrp->u8[i + 1];
-			if(a == 0 && f >= 0) {
-				if(f++ == 0) sprintf(replyp, "::");
-				replyp=reply+strlen(reply);
-			} 
-			else {
-				if(f > 0) {
-				f = -1;
-				} 
-				else if(i > 0) {
-					sprintf(replyp, ":");
-					replyp=reply+strlen(reply);
-				}
-				sprintf(replyp, "%x",a);
-				replyp=reply+strlen(reply);
-			}
 		}
-      
-      
-      sprintf(replyp, "#");
-      replyp=reply+strlen(reply);
-      j=0;
-    }
-  }
-  
-  
-  
-  if (j) PRINTF("  <none>");
-  sprintf(replyp, "#Routes#");
-  replyp=reply+strlen(reply);
-  
-  for(i = 0,j=1; i < UIP_DS6_ROUTE_NB; i++) {
-    if(uip_ds6_routing_table[i].isused) {
+		j=0;
 		
-      //ipaddr_add(&uip_ds6_routing_table[i].ipaddr);
+	}
+	if (j) PRINTF("  <none>");
+	PRINTF("\n---------\n");
+  
+	/*Make the message*/
+	/*Start with the neighbors*/
+	sprintf(replyp, "##Neighbors#");
+	replyp=reply+strlen(reply);
+	for(i = 0,j=1; i < UIP_DS6_NBR_NB; i++) {
+		if(uip_ds6_nbr_cache[i].isused) {
+			ipaddrp=&uip_ds6_nbr_cache[i].ipaddr;
       
-      ipaddrp=&uip_ds6_routing_table[i].ipaddr;
-      
-		uint16_t a;
-		int8_t p, f;
-		for(p = 0, f = 0; p < sizeof(uip_ipaddr_t); p += 2) {
-			a = (ipaddrp->u8[p] << 8) + ipaddrp->u8[p + 1];
-			if(a == 0 && f >= 0) {
-				if(f++ == 0) sprintf(replyp, "::");
-				replyp=reply+strlen(reply);
-			} 
-			else {
-				if(f > 0) {
-				f = -1;
+			uint16_t a;
+			int8_t i, f;
+			for(i = 0, f = 0; i < sizeof(uip_ipaddr_t); i += 2) {
+				a = (ipaddrp->u8[i] << 8) + ipaddrp->u8[i + 1];
+				if(a == 0 && f >= 0) {
+					if(f++ == 0) sprintf(replyp, "::");
+					replyp=reply+strlen(reply);
 				} 
-				else if(p > 0) {
-					sprintf(replyp, ":");
+				else {
+					if(f > 0) {
+						f = -1;
+					} 
+					else if(i > 0) {
+						sprintf(replyp, ":");
+						replyp=reply+strlen(reply);
+					}
+					sprintf(replyp, "%x",a);
 					replyp=reply+strlen(reply);
 				}
-				sprintf(replyp, "%x",a);
-				replyp=reply+strlen(reply);
 			}
+      
+      
+			sprintf(replyp, "#");
+			replyp=reply+strlen(reply);
+			j=0;
 		}
+	}
+	if (j) PRINTF("0#");
+	
+	
+	/*The routing table*/
+	sprintf(replyp, "#Routes#");
+	replyp=reply+strlen(reply);
+  
+	for(i = 0,j=1; i < UIP_DS6_ROUTE_NB; i++) {
+		if(uip_ds6_routing_table[i].isused) {
+			//ipaddr_add(&uip_ds6_routing_table[i].ipaddr);
+			ipaddrp=&uip_ds6_routing_table[i].ipaddr;
+			uint16_t a;
+			int8_t p, f;
+			for(p = 0, f = 0; p < sizeof(uip_ipaddr_t); p += 2) {
+				a = (ipaddrp->u8[p] << 8) + ipaddrp->u8[p + 1];
+				if(a == 0 && f >= 0) {
+					if(f++ == 0) sprintf(replyp, "::");
+					replyp=reply+strlen(reply);
+				} 
+				else {
+					if(f > 0) {
+						f = -1;
+					} 
+					else if(p > 0) {
+						sprintf(replyp, ":");
+						replyp=reply+strlen(reply);
+					}
+					sprintf(replyp, "%x",a);
+					replyp=reply+strlen(reply);
+				}
+			}
 		
-	  //sprintf(replyp, "*");
-      //replyp=reply+strlen(reply);	
-		
-      
-      
-      sprintf(replyp, "#/%u#", uip_ds6_routing_table[i].length);
-      replyp=reply+strlen(reply);
-      
-      //ipaddr_add(&uip_ds6_routing_table[i].nexthop);
-      
-      ipaddrp=&uip_ds6_routing_table[i].nexthop;
-      
-		uint16_t b;
-		//int8_t i, f;
-		for(p = 0, f = 0; p < sizeof(uip_ipaddr_t); p += 2) {
-			b = (ipaddrp->u8[p] << 8) + ipaddrp->u8[p + 1];
-			if(b == 0 && f >= 0) {
-				if(f++ == 0) sprintf(replyp, "::");
-				replyp=reply+strlen(reply);
-			} 
-			else {
-				if(f > 0) {
-				f = -1;
+			sprintf(replyp, "#/%u#", uip_ds6_routing_table[i].length);
+			replyp=reply+strlen(reply);
+   
+			//ipaddr_add(&uip_ds6_routing_table[i].nexthop);
+			ipaddrp=&uip_ds6_routing_table[i].nexthop;
+			uint16_t b;
+			//int8_t i, f;
+			for(p = 0, f = 0; p < sizeof(uip_ipaddr_t); p += 2) {
+				b = (ipaddrp->u8[p] << 8) + ipaddrp->u8[p + 1];
+				if(b == 0 && f >= 0) {
+					if(f++ == 0) sprintf(replyp, "::");
+					replyp=reply+strlen(reply);
 				} 
-				else if(p > 0) {
-					sprintf(replyp, ":");
+				else {
+					if(f > 0) {
+						f = -1;
+					} 
+					else if(p > 0) {
+						sprintf(replyp, ":");
+						replyp=reply+strlen(reply);
+					}
+					sprintf(replyp, "%x",b);
 					replyp=reply+strlen(reply);
 				}
-				sprintf(replyp, "%x",b);
-				replyp=reply+strlen(reply);
 			}
+      
+      
+			//     if(uip_ds6_routing_table[i].state.lifetime < 600) {
+			//       PRINTF(") %lus\n", uip_ds6_routing_table[i].state.lifetime);
+			//     } else {
+			//       PRINTF(")\n");
+			//     }
+			j=0;
+			sprintf(replyp, "#");
+			replyp=reply+strlen(reply);
 		}
-      
-      
- //     if(uip_ds6_routing_table[i].state.lifetime < 600) {
- //       PRINTF(") %lus\n", uip_ds6_routing_table[i].state.lifetime);
- //     } else {
- //       PRINTF(")\n");
- //     }
-      j=0;
-      sprintf(replyp, "#");
-      replyp=reply+strlen(reply);
-    }
-  }
-  //if (j) PRINTF("  <none>");
-  if (j){
-	  sprintf(replyp, "0#");
-      replyp=reply+strlen(reply);
-  }
-  //PRINTF("\n---------\n");
-
-
-
-  rpl_dag_t *dag;
-  dag = rpl_get_any_dag();
+	}
+	//if (j) PRINTF("  <none>");
+	if (j){
+		sprintf(replyp, "0#");
+		replyp=reply+strlen(reply);
+	}
+	//PRINTF("\n---------\n");
+	
+	/*The preferred parent*/
+	rpl_dag_t *dag;
+	dag = rpl_get_any_dag();
   
-  sprintf(replyp, "#preferredparent#");
-  replyp=reply+strlen(reply);
-  
-  
-  //PRINT6ADDR(&dag->preferred_parent->addr);
-	    ipaddrp=&dag->preferred_parent->addr;
+	sprintf(replyp, "#preferredparent#");
+	replyp=reply+strlen(reply);
+	//PRINT6ADDR(&dag->preferred_parent->addr);
+	ipaddrp=&dag->preferred_parent->addr;
       
-		uint16_t b;
-		int8_t p, f;
-		for(p = 0, f = 0; p < sizeof(uip_ipaddr_t); p += 2) {
-			b = (ipaddrp->u8[p] << 8) + ipaddrp->u8[p + 1];
-			if(b == 0 && f >= 0) {
-				if(f++ == 0) sprintf(replyp, "::");
+	uint16_t b;
+	int8_t p, f;
+	for(p = 0, f = 0; p < sizeof(uip_ipaddr_t); p += 2) {
+		b = (ipaddrp->u8[p] << 8) + ipaddrp->u8[p + 1];
+		if(b == 0 && f >= 0) {
+			if(f++ == 0) sprintf(replyp, "::");
 				replyp=reply+strlen(reply);
 			} 
-			else {
-				if(f > 0) {
+		else {
+			if(f > 0) {
 				f = -1;
-				} 
-				else if(p > 0) {
-					sprintf(replyp, ":");
-					replyp=reply+strlen(reply);
-				}
-				sprintf(replyp, "%x",b);
+			} 
+			else if(p > 0) {
+				sprintf(replyp, ":");
 				replyp=reply+strlen(reply);
 			}
+			sprintf(replyp, "%x",b);
+			replyp=reply+strlen(reply);
 		}
+	}
 	sprintf(replyp, "#");
     replyp=reply+strlen(reply);
 
