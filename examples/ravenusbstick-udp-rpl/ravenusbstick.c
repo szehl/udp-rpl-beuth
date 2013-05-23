@@ -55,28 +55,6 @@ static struct uip_udp_conn *server_conn;
 PROCESS(udp_server_process, "UDP server process");
 AUTOSTART_PROCESSES(&udp_server_process);
 /*---------------------------------------------------------------------------*/
-/*
-static void
-ipaddr_add(const uip_ipaddr_t *addr)
-{
-  uint16_t a;
-  int8_t i, f;
-  for(i = 0, f = 0; i < sizeof(uip_ipaddr_t); i += 2) {
-    a = (addr->u8[i] << 8) + addr->u8[i + 1];
-    if(a == 0 && f >= 0) {
-      if(f++ == 0) PRINTF("::");
-    } else {
-      if(f > 0) {
-        f = -1;
-      } else if(i > 0) {
-        PRINTF(":");
-      }
-      PRINTF("%x",a);
-    }
-  }
-}
-
-*/
 
 static void
 tcpip_handler(void)
@@ -86,112 +64,25 @@ tcpip_handler(void)
   char *replyp;
   replyp=reply;
   uip_ipaddr_t *ipaddrp;
-  extern uip_ds6_nbr_t uip_ds6_nbr_cache[];
+  //extern uip_ds6_nbr_t uip_ds6_nbr_cache[];
   extern uip_ds6_route_t uip_ds6_routing_table[];
-  extern uip_ds6_netif_t uip_ds6_if;
+  //extern uip_ds6_netif_t uip_ds6_if;
 
 
 
   if(uip_newdata()) {
-    //appdata = (char *)uip_appdata;
-    //appdata[uip_datalen()] = 0;
-    /*
-    PRINTF("DATA recv '%s' from ", appdata);
-    PRINTF("%d",
-           UIP_IP_BUF->srcipaddr.u8[sizeof(UIP_IP_BUF->srcipaddr.u8) - 1]);
-    PRINTF("\n");
-    PRINTF("DATA sending reply\n");
-    */
-    /*
-    extern uip_ds6_nbr_t uip_ds6_nbr_cache[];
-    extern uip_ds6_route_t uip_ds6_routing_table[];
-	extern uip_ds6_netif_t uip_ds6_if;
-	*/
+    
 	uint8_t i,j;
-	//uint8_t j;
-	/*
-	PRINTF("\nAddresses [%u max]\n",UIP_DS6_ADDR_NB);
-	for (i=0;i<UIP_DS6_ADDR_NB;i++) {
-		if (uip_ds6_if.addr_list[i].isused) {
-			ipaddr_add(&uip_ds6_if.addr_list[i].ipaddr);
-			PRINTF("\n");
-		}
-	}
-	PRINTF("\nNeighbors [%u max]\n",UIP_DS6_NBR_NB);
-	for(i = 0,j=1; i < UIP_DS6_NBR_NB; i++) {
-		if(uip_ds6_nbr_cache[i].isused) {
-			ipaddr_add(&uip_ds6_nbr_cache[i].ipaddr);
-			PRINTF("\n");
-			j=0;
-		}
-	}
-	if (j) PRINTF("  <none>");
-		PRINTF("\nRoutes [%u max]\n",UIP_DS6_ROUTE_NB);
-	for(i = 0,j=1; i < UIP_DS6_ROUTE_NB; i++) {
-		if(uip_ds6_routing_table[i].isused) {
-			ipaddr_add(&uip_ds6_routing_table[i].ipaddr);
-			PRINTF("/%u (via ", uip_ds6_routing_table[i].length);
-			ipaddr_add(&uip_ds6_routing_table[i].nexthop);
- //     	if(uip_ds6_routing_table[i].state.lifetime < 600) {
-			PRINTF(") %lus\n", uip_ds6_routing_table[i].state.lifetime);
-		} 
-		else {
- //       PRINTF(")\n");
-		}
-		j=0;
-		
-	}
-	if (j) PRINTF("  <none>");
-	PRINTF("\n---------\n");
-  */
-	/*Make the message*/
-	/*Start with the neighbors*/
-	/*
-	sprintf(replyp, "##Neighbors#");
-	replyp=reply+strlen(reply);
-	for(i = 0,j=1; i < UIP_DS6_NBR_NB; i++) {
-		if(uip_ds6_nbr_cache[i].isused) {
-			ipaddrp=&uip_ds6_nbr_cache[i].ipaddr;
-      */
-			//uint16_t a;
-			//int8_t i, f;
-			/*
-			for(i = 0, f = 0; i < sizeof(uip_ipaddr_t); i += 2) {
-				a = (ipaddrp->u8[i] << 8) + ipaddrp->u8[i + 1];
-				if(a == 0 && f >= 0) {
-					if(f++ == 0) sprintf(replyp, "::");
-					replyp=reply+strlen(reply);
-				} 
-				else {
-					if(f > 0) {
-						f = -1;
-					} 
-					else if(i > 0) {
-						sprintf(replyp, ":");
-						replyp=reply+strlen(reply);
-					}
-					sprintf(replyp, "%x",a);
-					replyp=reply+strlen(reply);
-				}
-			}
-      
-      
-			sprintf(replyp, "#");
-			replyp=reply+strlen(reply);
-			j=0;
-		}
-	}
-	if (j) sprintf(replyp,"0#");
-	replyp=reply+strlen(reply);
-	*/
-	
 	/*The routing table*/
-	sprintf(replyp, "#Routes#");
+	sprintf(replyp, "#Routes");
 	replyp=reply+strlen(reply);
+	uip_ipaddr_copy(&server_conn->ripaddr, &UIP_IP_BUF->srcipaddr);
   
 	for(i = 0,j=1; i < UIP_DS6_ROUTE_NB; i++) {
+		
 		if(uip_ds6_routing_table[i].isused) {
-			//ipaddr_add(&uip_ds6_routing_table[i].ipaddr);
+			sprintf(replyp, "#");
+			replyp=reply+strlen(reply);
 			ipaddrp=&uip_ds6_routing_table[i].ipaddr;
 			uint16_t a;
 			int8_t p, f;
@@ -216,11 +107,8 @@ tcpip_handler(void)
 		
 			sprintf(replyp, "#");
 			replyp=reply+strlen(reply);
-   
-			//ipaddr_add(&uip_ds6_routing_table[i].nexthop);
 			ipaddrp=&uip_ds6_routing_table[i].nexthop;
 			uint16_t b;
-			//int8_t i, f;
 			for(p = 0, f = 0; p < sizeof(uip_ipaddr_t); p += 2) {
 				b = (ipaddrp->u8[p] << 8) + ipaddrp->u8[p + 1];
 				if(b == 0 && f >= 0) {
@@ -239,89 +127,36 @@ tcpip_handler(void)
 					replyp=reply+strlen(reply);
 				}
 			}
-      
-      
-			//     if(uip_ds6_routing_table[i].state.lifetime < 600) {
-			//       PRINTF(") %lus\n", uip_ds6_routing_table[i].state.lifetime);
-			//     } else {
-			//       PRINTF(")\n");
-			//     }
 			j=0;
 			sprintf(replyp, "##");
 			replyp=reply+strlen(reply);
+			*replyp='\0';
+			//uip_ipaddr_copy(&server_conn->ripaddr, &UIP_IP_BUF->srcipaddr);
+			uip_udp_packet_send(server_conn, reply, strlen(reply));
+			//memset(&server_conn->ripaddr, 0, sizeof(server_conn->ripaddr));
+			/*set pointer to beginning*/
+			replyp=reply;
 		}
+		
 	}
-	//if (j) PRINTF("  <none>");
 	if (j){
-		sprintf(replyp, "0#");
+		sprintf(replyp, "#0#");
 		replyp=reply+strlen(reply);
+		*replyp='\0';
+		//uip_ipaddr_copy(&server_conn->ripaddr, &UIP_IP_BUF->srcipaddr);
+		uip_udp_packet_send(server_conn, reply, strlen(reply));
+		//memset(&server_conn->ripaddr, 0, sizeof(server_conn->ripaddr));
+		replyp=reply;
 	}
-	//PRINTF("\n---------\n");
-	
-	/*The preferred parent*/
-	/*
-	rpl_dag_t *dag;
-	dag = rpl_get_any_dag();
-  
-	sprintf(replyp, "#preferredparent#");
-	replyp=reply+strlen(reply);
-	//PRINT6ADDR(&dag->preferred_parent->addr);
-	ipaddrp=&dag->preferred_parent->addr;
-      
-	uint16_t b;
-	int8_t p, f;
-	for(p = 0, f = 0; p < sizeof(uip_ipaddr_t); p += 2) {
-		b = (ipaddrp->u8[p] << 8) + ipaddrp->u8[p + 1];
-		if(b == 0 && f >= 0) {
-			if(f++ == 0) sprintf(replyp, "::");
-				replyp=reply+strlen(reply);
-			} 
-		else {
-			if(f > 0) {
-				f = -1;
-			} 
-			else if(p > 0) {
-				sprintf(replyp, ":");
-				replyp=reply+strlen(reply);
-			}
-			sprintf(replyp, "%x",b);
-			replyp=reply+strlen(reply);
-		}
-	}
-	sprintf(replyp, "#");
-    replyp=reply+strlen(reply);
-*/
-	//printf("%s",reply);
-	*replyp='\0';
-    uip_ipaddr_copy(&server_conn->ripaddr, &UIP_IP_BUF->srcipaddr);
-    uip_udp_packet_send(server_conn, reply, strlen(reply));
-    //uip_create_unspecified(&server_conn->ripaddr);
-//#endif
+	//*replyp='\0';
+    //uip_ipaddr_copy(&server_conn->ripaddr, &UIP_IP_BUF->srcipaddr);
+    uip_udp_packet_send(server_conn, "#LASTPACKET#", strlen("#LASTPACKET#"));
+    memset(&server_conn->ripaddr, 0, sizeof(server_conn->ripaddr));
+    //server_conn->rport=0;
   }
 }
 /*---------------------------------------------------------------------------*/
 
-/*
-static void
-print_local_addresses(void)
-{
-  int i;
-  uint8_t state;
-
-  PRINTF("Server IPv6 addresses: ");
-  for(i = 0; i < UIP_DS6_ADDR_NB; i++) {
-    state = uip_ds6_if.addr_list[i].state;
-    if(state == ADDR_TENTATIVE || state == ADDR_PREFERRED) {
-      PRINT6ADDR(&uip_ds6_if.addr_list[i].ipaddr);
-      PRINTF("\n");
-      /* hack to make address "final" */
-      /*
-      if (state == ADDR_TENTATIVE) {
-	uip_ds6_if.addr_list[i].state = ADDR_PREFERRED;
-      }
-    }
-  }
-}
 /*---------------------------------------------------------------------------*/
 
 
@@ -332,82 +167,7 @@ PROCESS_THREAD(udp_server_process, ev, data)
 
   PROCESS_BEGIN();
 
-  //PROCESS_PAUSE();
-
-  //SENSORS_ACTIVATE(button_sensor);
-
   PRINTF("UDP SERVER LAEUFT!!!!!!\n");
-  /*
-  extern uip_ds6_nbr_t uip_ds6_nbr_cache[];
-  extern uip_ds6_route_t uip_ds6_routing_table[];
-  extern uip_ds6_netif_t uip_ds6_if;
-  uint8_t i,j;
-  PRINTF("\nNeighbors [%u max]\n",UIP_DS6_NBR_NB);
-  for(i = 0,j=1; i < UIP_DS6_NBR_NB; i++) {
-    if(uip_ds6_nbr_cache[i].isused) {
-      uip_debug_ipaddr_print(&uip_ds6_nbr_cache[i].ipaddr);
-      PRINTF("\n");
-      j=0;
-    }
-  }
-  if (j) PRINTF("  <none>");
-  PRINTF("\nRoutes [%u max]\n",UIP_DS6_ROUTE_NB);
-  for(i = 0,j=1; i < UIP_DS6_ROUTE_NB; i++) {
-    if(uip_ds6_routing_table[i].isused) {
-      uip_debug_ipaddr_print(&uip_ds6_routing_table[i].ipaddr);
-      PRINTF("/%u (via ", uip_ds6_routing_table[i].length);
-      uip_debug_ipaddr_print(&uip_ds6_routing_table[i].nexthop);
- //     if(uip_ds6_routing_table[i].state.lifetime < 600) {
-        PRINTF(") %lus\n", uip_ds6_routing_table[i].state.lifetime);
- //     } else {
- //       PRINTA(")\n");
- //     }
-      j=0;
-    }
-  }
-*/
-
-//#if UIP_CONF_ROUTER
-/* The choice of server address determines its 6LoPAN header compression.
- * Obviously the choice made here must also be selected in udp-client.c.
- *
- * For correct Wireshark decoding using a sniffer, add the /64 prefix to the 6LowPAN protocol preferences,
- * e.g. set Context 0 to aaaa::.  At present Wireshark copies Context/128 and then overwrites it.
- * (Setting Context 0 to aaaa::1111:2222:3333:4444 will report a 16 bit compressed address of aaaa::1111:22ff:fe33:xxxx)
- * Note Wireshark's IPCMV6 checksum verification depends on the correct uncompressed addresses.
- */
- 
-//#if 0
-/* Mode 1 - 64 bits inline */
-  // uip_ip6addr(&ipaddr, 0xaaaa, 0, 0, 0, 0, 0, 0, 1);
-//#elif 1
-/* Mode 2 - 16 bits inline */
-//  uip_ip6addr(&ipaddr, 0xaaaa, 0, 0, 0, 0, 0x00ff, 0xfe00, 1);
-//#else
-/* Mode 3 - derived from link local (MAC) address */
-//  uip_ip6addr(&ipaddr, 0xaaaa, 0, 0, 0, 0, 0, 0, 0);
-//  uip_ds6_set_addr_iid(&ipaddr, &uip_lladdr);
-//#endif
-
-//  uip_ds6_addr_add(&ipaddr, 0, ADDR_MANUAL);
-//  root_if = uip_ds6_addr_lookup(&ipaddr);
-//  if(root_if != NULL) {
-//    rpl_dag_t *dag;
-//    dag = rpl_set_root(RPL_DEFAULT_INSTANCE,(uip_ip6addr_t *)&ipaddr);
-//    uip_ip6addr(&ipaddr, 0xaaaa, 0, 0, 0, 0, 0, 0, 0);
- //   rpl_set_prefix(dag, &ipaddr, 64);
- //   PRINTF("created a new RPL dag\n");
-//  } else {
- //   PRINTF("failed to create a new RPL DAG\n");
- // }
-//#endif /* UIP_CONF_ROUTER */
-  
- // print_local_addresses();
-
-  /* The data sink runs with a 100% duty cycle in order to ensure high 
-     packet reception rates. */
- // NETSTACK_MAC.off(1);
-
   server_conn = udp_new(NULL, UIP_HTONS(UDP_CLIENT_PORT), NULL);
   if(server_conn == NULL) {
     PRINTF("No UDP connection available, exiting the process!\n");
@@ -425,10 +185,6 @@ PROCESS_THREAD(udp_server_process, ev, data)
     if(ev == tcpip_event) {
       tcpip_handler();
     } 
-    //else if (ev == sensors_event && data == &button_sensor) {
-    //  PRINTF("Initiaing global repair\n");
-    //  rpl_repair_root(RPL_DEFAULT_INSTANCE);
-    //}
   }
 
   PROCESS_END();
